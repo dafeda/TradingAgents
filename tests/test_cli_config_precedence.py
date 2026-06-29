@@ -1,4 +1,4 @@
-"""CLI config precedence (#976, #977).
+"""CLI config precedence.
 
 An explicit environment override for the debate/risk round counts, or the
 checkpoint flag, must win over the interactive research-depth selection — the CLI
@@ -21,7 +21,6 @@ SELECTIONS = {
     "google_thinking_level": None,
     "openai_reasoning_effort": None,
     "anthropic_effort": None,
-    "output_language": "English",
 }
 
 

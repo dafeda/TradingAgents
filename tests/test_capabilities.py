@@ -78,7 +78,7 @@ class TestMinimaxExactMatches:
 
     def test_m2_x_requires_reasoning_split(self):
         # M2.x reasoning models need reasoning_split=True so <think> blocks
-        # land in reasoning_details instead of content (#826).
+        # land in reasoning_details instead of content.
         for model in ("MiniMax-M2.7", "MiniMax-M2.5-highspeed", "MiniMax-M2"):
             assert get_capabilities(model).requires_reasoning_split is True
 
@@ -88,7 +88,7 @@ class TestMinimaxExactMatches:
     def test_non_reasoning_minimax_does_not_get_reasoning_split(self):
         # Coding Plan, MiniMax-Text-01, and any non-M2-prefixed MiniMax model
         # reject the reasoning_split kwarg via the openai SDK's strict
-        # validation (#826). Default capability has it disabled.
+        # validation. Default capability has it disabled.
         for model in ("minimax-text-01", "MiniMax-Coding-Plan", "abab6.5-chat"):
             assert get_capabilities(model).requires_reasoning_split is False
 

@@ -8,8 +8,3 @@ class AnalystType(str, Enum):
     SOCIAL = "social"
     NEWS = "news"
     FUNDAMENTALS = "fundamentals"
-
-
-class AssetType(str, Enum):
-    STOCK = "stock"
-    CRYPTO = "crypto"

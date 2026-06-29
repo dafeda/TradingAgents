@@ -50,18 +50,18 @@ class TestLoadOhlcvNoPoison(unittest.TestCase):
 class TestRouteToVendorSentinel(unittest.TestCase):
     def test_no_data_from_all_vendors_returns_sentinel(self):
         def raises_no_data(symbol, *a, **k):
-            raise NoMarketDataError(symbol, "GC=F", "no rows")
+            raise NoMarketDataError(symbol, "TTF=F", "no rows")
 
-        patched = {"yfinance": raises_no_data, "alpha_vantage": raises_no_data}
+        patched = {"yfinance": raises_no_data, "vendor_b": raises_no_data}
         with mock.patch.dict(
             interface.VENDOR_METHODS, {"get_stock_data": patched}, clear=False
         ):
             result = interface.route_to_vendor(
-                "get_stock_data", "XAUUSD+", "2026-01-01", "2026-01-10"
+                "get_stock_data", "TTF", "2026-01-01", "2026-01-10"
             )
         self.assertIn("NO_DATA_AVAILABLE", result)
-        self.assertIn("XAUUSD+", result)
-        self.assertIn("GC=F", result)
+        self.assertIn("TTF", result)
+        self.assertIn("TTF=F", result)
         self.assertIn("Do not estimate", result)
 
     def test_unconfigured_fallback_does_not_mask_no_data(self):
@@ -72,9 +72,9 @@ class TestRouteToVendorSentinel(unittest.TestCase):
             raise NoMarketDataError(symbol, symbol, "no rows")
 
         def raises_unavailable(symbol, *a, **k):
-            raise ValueError("ALPHA_VANTAGE_API_KEY environment variable is not set.")
+            raise ValueError("GIE_API_KEY environment variable is not set.")
 
-        patched = {"yfinance": raises_no_data, "alpha_vantage": raises_unavailable}
+        patched = {"yfinance": raises_no_data, "vendor_b": raises_unavailable}
         with mock.patch.dict(
             interface.VENDOR_METHODS, {"get_stock_data": patched}, clear=False
         ):

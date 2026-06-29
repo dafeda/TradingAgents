@@ -1,33 +1,29 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from tradingagents.agents.utils.agent_utils import (
-    get_balance_sheet,
-    get_cashflow,
-    get_fundamentals,
-    get_income_statement,
+    get_carbon_price,
+    get_gas_storage,
     get_instrument_context_from_state,
-    get_language_instruction,
+    get_pipeline_flows,
+    get_weather,
 )
+from tradingagents.instrument_profiles import get_profile
 
 
 def create_fundamentals_analyst(llm):
     def fundamentals_analyst_node(state):
         current_date = state["trade_date"]
+        ticker = state["company_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
 
-        tools = [
-            get_fundamentals,
-            get_balance_sheet,
-            get_cashflow,
-            get_income_statement,
-        ]
-
-        system_message = (
-            "You are a researcher tasked with analyzing fundamental information over the past week about a company. Please write a comprehensive report of the company's fundamental information such as financial documents, company profile, basic company financials, and company financial history to gain a full view of the company's fundamental information to inform traders. Make sure to include as much detail as possible. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."
-            + " Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."
-            + " Use the available tools: `get_fundamentals` for comprehensive company analysis, `get_balance_sheet`, `get_cashflow`, and `get_income_statement` for specific financial statements."
-            + get_language_instruction(),
-        )
+        tools = [get_gas_storage, get_weather, get_pipeline_flows, get_carbon_price]
+        try:
+            system_message = get_profile(ticker).fundamentals_note
+        except KeyError:
+            system_message = (
+                "You are a supply/demand analyst. Write a comprehensive fundamentals "
+                "report on the balance and price drivers to inform traders."
+            )
 
         prompt = ChatPromptTemplate.from_messages(
             [

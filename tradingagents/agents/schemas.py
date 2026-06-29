@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field, field_validator
 
 # LLMs sometimes write a placeholder string ("None", "N/A", ...) into an optional
 # numeric field instead of omitting it. Coerce those to None so the structured
-# call validates instead of erroring (#1058). Pydantic still parses real numeric
+# call validates instead of erroring. Pydantic still parses real numeric
 # strings ("189.5") to float.
 _NULLISH_FLOAT = {"", "none", "n/a", "na", "null", "nil", "-", "tbd", "unknown"}
 

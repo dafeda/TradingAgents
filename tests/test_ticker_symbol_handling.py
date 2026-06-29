@@ -12,9 +12,15 @@ class TickerSymbolHandlingTests(unittest.TestCase):
         self.assertEqual(normalize_ticker_symbol(" cnc.to "), "CNC.TO")
 
     def test_build_instrument_context_mentions_exact_symbol(self):
-        context = build_instrument_context("7203.T")
-        self.assertIn("7203.T", context)
-        self.assertIn("exchange suffix", context)
+        context = build_instrument_context("TTF=F")
+        self.assertIn("TTF=F", context)
+        self.assertIn("futures suffix", context)
+
+    def test_build_instrument_context_ngf_mentions_henry_hub(self):
+        context = build_instrument_context("NG=F")
+        self.assertIn("NG=F", context)
+        self.assertIn("Henry Hub", context)
+        self.assertIn("USD/MMBtu", context)
 
     def test_single_get_ticker_no_shadow(self):
         # Regression: cli/main.py had a duplicate get_ticker with an empty

@@ -19,17 +19,14 @@ from rich.table import Table
 from rich.text import Text
 
 from cli.announcements import display_announcements, fetch_announcements
-from cli.stats_handler import StatsCallbackHandler
 from cli.utils import (
     ask_anthropic_effort,
     ask_gemini_thinking_config,
     ask_glm_region,
     ask_minimax_region,
     ask_openai_reasoning_effort,
-    ask_output_language,
     ask_qwen_region,
     confirm_ollama_endpoint,
-    detect_asset_type,
     ensure_api_key,
     get_ticker,
     prompt_openai_compatible_url,
@@ -41,14 +38,6 @@ from cli.utils import (
     select_shallow_thinking_agent,
 )
 from tradingagents.default_config import DEFAULT_CONFIG
-from tradingagents.graph.analyst_execution import (
-    AnalystWallTimeTracker,
-    build_analyst_execution_plan,
-    get_initial_analyst_node,
-    sync_analyst_tracker_from_chunk,
-)
-from tradingagents.graph.trading_graph import TradingAgentsGraph
-from tradingagents.reporting import write_report_tree
 
 console = Console()
 
@@ -535,19 +524,12 @@ def get_user_selections():
     # Step 1: Ticker symbol
     console.print(
         create_question_box(
-            "Step 1: Ticker Symbol",
-            "Enter the ticker, with exchange suffix when needed (e.g. SPY, 0700.HK, BTC-USD)",
-            "SPY",
+            "Step 1: Gas Contract",
+            "Select the gas contract to analyze (TTF=F Dutch TTF / NG=F Henry Hub — both traded)",
+            "TTF=F",
         )
     )
     selected_ticker = get_ticker()
-    asset_type = detect_asset_type(selected_ticker)
-    # Only announce when it's not the default stock path, to avoid printing
-    # "stock" on every run.
-    if asset_type.value != "stock":
-        console.print(
-            f"[green]Detected asset type:[/green] {asset_type.value}"
-        )
 
     # Step 2: Analysis date
     default_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -560,36 +542,21 @@ def get_user_selections():
     )
     analysis_date = get_analysis_date()
 
-    # Step 3: Output language (skipped when set via TRADINGAGENTS_OUTPUT_LANGUAGE)
-    if os.environ.get("TRADINGAGENTS_OUTPUT_LANGUAGE"):
-        output_language = DEFAULT_CONFIG["output_language"]
-        console.print(
-            f"[green]✓ Output language from environment:[/green] {output_language}"
-        )
-    else:
-        console.print(
-            create_question_box(
-                "Step 3: Output Language",
-                "Select the language for analyst reports and final decision"
-            )
-        )
-        output_language = ask_output_language()
-
-    # Step 4: Select analysts
+    # Step 3: Select analysts
     console.print(
         create_question_box(
-            "Step 4: Analysts Team", "Select your LLM analyst agents for the analysis"
+            "Step 3: Analysts Team", "Select your LLM analyst agents for the analysis"
         )
     )
-    selected_analysts = select_analysts(asset_type)
+    selected_analysts = select_analysts()
     console.print(
         f"[green]Selected analysts:[/green] {', '.join(analyst.value for analyst in selected_analysts)}"
     )
 
-    # Step 5: Research depth (skipped when both round counts are set via env).
+    # Step 4: Research depth (skipped when both round counts are set via env).
     # Research depth maps to the debate + risk round counts; when both are
     # supplied through TRADINGAGENTS_MAX_DEBATE_ROUNDS / _MAX_RISK_ROUNDS we keep
-    # the run non-interactive and honor the env values (#977).
+    # the run non-interactive and honor the env values.
     depth_from_env = bool(os.environ.get("TRADINGAGENTS_MAX_DEBATE_ROUNDS")) and bool(
         os.environ.get("TRADINGAGENTS_MAX_RISK_ROUNDS")
     )
@@ -603,12 +570,12 @@ def get_user_selections():
     else:
         console.print(
             create_question_box(
-                "Step 5: Research Depth", "Select your research depth level"
+                "Step 4: Research Depth", "Select your research depth level"
             )
         )
         selected_research_depth = select_research_depth()
 
-    # Step 6: LLM Provider (skipped when set via TRADINGAGENTS_LLM_PROVIDER).
+    # Step 5: LLM Provider (skipped when set via TRADINGAGENTS_LLM_PROVIDER).
     # The backend URL comes from TRADINGAGENTS_LLM_BACKEND_URL when set,
     # otherwise the provider's default endpoint — the same value the menu
     # would have picked.
@@ -625,7 +592,7 @@ def get_user_selections():
     else:
         console.print(
             create_question_box(
-                "Step 6: LLM Provider", "Select your LLM provider"
+                "Step 5: LLM Provider", "Select your LLM provider"
             )
         )
         selected_llm_provider, backend_url = select_llm_provider()
@@ -641,7 +608,7 @@ def get_user_selections():
             selected_llm_provider, backend_url = ask_glm_region()
 
         # Honor an explicit env backend URL even when the provider was chosen
-        # interactively, so it isn't overwritten by the menu default (#978).
+        # interactively, so it isn't overwritten by the menu default.
         backend_url = resolve_backend_url(
             selected_llm_provider, backend_url, env_url=DEFAULT_CONFIG["backend_url"]
         )
@@ -661,7 +628,7 @@ def get_user_selections():
         # doesn't fail later at the first API call.
         ensure_api_key(selected_llm_provider)
 
-    # Step 7: Thinking agents (skipped when either model is set via environment)
+    # Step 6: Thinking agents (skipped when either model is set via environment)
     if os.environ.get("TRADINGAGENTS_QUICK_THINK_LLM") or os.environ.get("TRADINGAGENTS_DEEP_THINK_LLM"):
         selected_shallow_thinker = DEFAULT_CONFIG["quick_think_llm"]
         selected_deep_thinker = DEFAULT_CONFIG["deep_think_llm"]
@@ -672,13 +639,13 @@ def get_user_selections():
     else:
         console.print(
             create_question_box(
-                "Step 7: Thinking Agents", "Select your thinking agents for analysis"
+                "Step 6: Thinking Agents", "Select your thinking agents for analysis"
             )
         )
         selected_shallow_thinker = select_shallow_thinking_agent(selected_llm_provider)
         selected_deep_thinker = select_deep_thinking_agent(selected_llm_provider)
 
-    # Step 8: Provider-specific reasoning/thinking configuration. Each knob is
+    # Step 7: Provider-specific reasoning/thinking configuration. Each knob is
     # settable via its TRADINGAGENTS_* env var; when that var is set (or the
     # provider itself came from env) the prompt is skipped and the configured
     # value is used — same env-precedence rule as the steps above. None = each
@@ -695,25 +662,24 @@ def get_user_selections():
     elif provider_lower == "google":
         thinking_level = thinking_value_or_prompt(
             "TRADINGAGENTS_GOOGLE_THINKING_LEVEL", "google_thinking_level",
-            "Gemini thinking mode", "Step 8: Thinking Mode",
+            "Gemini thinking mode", "Step 7: Thinking Mode",
             "Configure Gemini thinking mode", ask_gemini_thinking_config,
         )
     elif provider_lower == "openai":
         reasoning_effort = thinking_value_or_prompt(
             "TRADINGAGENTS_OPENAI_REASONING_EFFORT", "openai_reasoning_effort",
-            "Reasoning effort", "Step 8: Reasoning Effort",
+            "Reasoning effort", "Step 7: Reasoning Effort",
             "Configure OpenAI reasoning effort level", ask_openai_reasoning_effort,
         )
     elif provider_lower == "anthropic":
         anthropic_effort = thinking_value_or_prompt(
             "TRADINGAGENTS_ANTHROPIC_EFFORT", "anthropic_effort",
-            "Claude effort", "Step 8: Effort Level",
+            "Claude effort", "Step 7: Effort Level",
             "Configure Claude effort level", ask_anthropic_effort,
         )
 
     return {
         "ticker": selected_ticker,
-        "asset_type": asset_type.value,
         "analysis_date": analysis_date,
         "analysts": selected_analysts,
         "research_depth": selected_research_depth,
@@ -724,7 +690,6 @@ def get_user_selections():
         "google_thinking_level": thinking_level,
         "openai_reasoning_effort": reasoning_effort,
         "anthropic_effort": anthropic_effort,
-        "output_language": output_language,
     }
 
 
@@ -749,6 +714,8 @@ def get_analysis_date():
 
 def save_report_to_disk(final_state, ticker: str, save_path: Path):
     """Save the complete analysis report to disk (shared CLI/API writer)."""
+    from tradingagents.reporting import write_report_tree
+
     return write_report_tree(final_state, ticker, save_path)
 
 
@@ -851,6 +818,8 @@ def update_analyst_statuses(message_buffer, chunk, wall_time_tracker=None):
     found_active = False
 
     if wall_time_tracker is not None:
+        from tradingagents.graph.analyst_execution import sync_analyst_tracker_from_chunk
+
         sync_analyst_tracker_from_chunk(wall_time_tracker, chunk)
 
     for analyst_key in ANALYST_ORDER:
@@ -967,7 +936,7 @@ def _build_run_config(selections: dict, checkpoint: bool | None) -> dict:
     config = DEFAULT_CONFIG.copy()
     # Research depth sets both round counts, but an explicit env override
     # (TRADINGAGENTS_MAX_DEBATE_ROUNDS / _MAX_RISK_ROUNDS) wins over the
-    # interactive selection — leave the env-applied value in place (#977).
+    # interactive selection — leave the env-applied value in place.
     if not os.environ.get("TRADINGAGENTS_MAX_DEBATE_ROUNDS"):
         config["max_debate_rounds"] = selections["research_depth"]
     if not os.environ.get("TRADINGAGENTS_MAX_RISK_ROUNDS"):
@@ -980,15 +949,26 @@ def _build_run_config(selections: dict, checkpoint: bool | None) -> dict:
     config["google_thinking_level"] = selections.get("google_thinking_level")
     config["openai_reasoning_effort"] = selections.get("openai_reasoning_effort")
     config["anthropic_effort"] = selections.get("anthropic_effort")
-    config["output_language"] = selections.get("output_language", "English")
     # --checkpoint/--no-checkpoint overrides only when explicitly given; omitting
-    # the flag preserves TRADINGAGENTS_CHECKPOINT_ENABLED / the default (#976).
+    # the flag preserves TRADINGAGENTS_CHECKPOINT_ENABLED / the default.
     if checkpoint is not None:
         config["checkpoint_enabled"] = checkpoint
     return config
 
 
 def run_analysis(checkpoint: bool | None = None):
+    # Heavy imports are deferred to here (the only CLI entry point that needs
+    # them) so `tradingagents --help` / `--clear-checkpoints` don't pay the
+    # ~1.8 s langchain_core + agent_utils load on startup.
+    from cli.stats_handler import StatsCallbackHandler
+    from tradingagents.agents.utils.agent_utils import build_instrument_context
+    from tradingagents.graph.analyst_execution import (
+        AnalystWallTimeTracker,
+        build_analyst_execution_plan,
+        get_initial_analyst_node,
+    )
+    from tradingagents.graph.trading_graph import TradingAgentsGraph
+
     # First get all user selections
     selections = get_user_selections()
 
@@ -1000,6 +980,28 @@ def run_analysis(checkpoint: bool | None = None):
     # Normalize analyst selection to predefined order (selection is a 'set', order is fixed)
     selected_set = {analyst.value for analyst in selections["analysts"]}
     selected_analyst_keys = [a for a in ANALYST_ORDER if a in selected_set]
+
+    # Henry Hub (NG=F) has no US supply/demand data vendors yet — silently drop
+    # the fundamentals analyst when trading it so the run doesn't stall on a
+    # node whose tools have no US coverage. A notice keeps the user informed.
+    # US vendors (EIA storage, US weather, US flows) are a follow-up phase;
+    # flipping the profile flag to True and removing this drop is the only
+    # wiring change required when they land.
+    try:
+        from tradingagents.instrument_profiles import get_profile
+
+        if "fundamentals" in selected_analyst_keys and not get_profile(
+            selections["ticker"]
+        ).fundamentals_available:
+            selected_analyst_keys = [a for a in selected_analyst_keys if a != "fundamentals"]
+            console.print(
+                f"[yellow]Note:[/yellow] Henry Hub ({selections['ticker']}) fundamentals "
+                "analyst unavailable — no US gas supply/demand vendors yet. "
+                "Running market/news/sentiment analysts only."
+            )
+    except KeyError:
+        pass  # Unknown ticker — leave the selection unchanged.
+
     analyst_execution_plan = build_analyst_execution_plan(selected_analyst_keys)
     analyst_wall_time_tracker = AnalystWallTimeTracker(analyst_execution_plan)
 
@@ -1074,8 +1076,6 @@ def run_analysis(checkpoint: bool | None = None):
 
         # Add initial messages
         message_buffer.add_message("System", f"Selected ticker: {selections['ticker']}")
-        if selections["asset_type"] != "stock":
-            message_buffer.add_message("System", f"Detected asset type: {selections['asset_type']}")
         message_buffer.add_message(
             "System", f"Analysis date: {selections['analysis_date']}"
         )
@@ -1098,16 +1098,15 @@ def run_analysis(checkpoint: bool | None = None):
         update_display(layout, spinner_text, stats_handler=stats_handler, start_time=start_time)
 
         # Initialize state and get graph args with callbacks.
-        # Resolve the instrument identity once here so all agents anchor to
-        # the real company (#814); the CLI builds state directly rather than
+        # Build the instrument context once here so all agents anchor to the
+        # real contract; the CLI builds state directly rather than
         # going through propagate(), so this must happen on the CLI path too.
-        instrument_context = graph.resolve_instrument_context(
-            selections["ticker"], selections["asset_type"]
-        )
+        # The context is profile-driven (Dutch TTF or Henry Hub) so each
+        # contract gets the right display name, currency, and framing.
+        instrument_context = build_instrument_context(selections["ticker"])
         init_agent_state = graph.propagator.create_initial_state(
             selections["ticker"],
             selections["analysis_date"],
-            asset_type=selections["asset_type"],
             instrument_context=instrument_context,
         )
         # Pass callbacks to graph config for tool execution tracking

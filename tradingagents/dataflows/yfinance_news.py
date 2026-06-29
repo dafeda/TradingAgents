@@ -77,10 +77,10 @@ def get_news_yfinance(
     end_date: str,
 ) -> str:
     """
-    Retrieve news for a specific stock ticker using yfinance.
+    Retrieve news for a specific gas contract symbol using yfinance.
 
     Args:
-        ticker: Stock ticker symbol (e.g., "AAPL")
+        ticker: Gas contract symbol (e.g., "TTF=F")
         start_date: Start date in yyyy-mm-dd format
         end_date: End date in yyyy-mm-dd format
 
@@ -89,8 +89,8 @@ def get_news_yfinance(
     """
     article_limit = get_config()["news_article_limit"]
     # Query Yahoo with the canonical symbol, like every other yfinance path —
-    # a raw broker/forex/crypto alias (XAUUSD, BTCUSD) otherwise silently
-    # returns no news. Keep the user's ticker in the report header.
+    # a raw broker alias (TTF, NATGAS) otherwise silently returns no news.
+    # Keep the user's ticker in the report header.
     canonical = normalize_symbol(ticker)
     resolved = "" if canonical == ticker else f" (resolved to {canonical})"
     try:
@@ -196,7 +196,7 @@ def get_global_news_yfinance(
         kept = 0
         for article in all_news[:limit]:
             # Extract uniformly (flat + nested) and apply the same look-ahead-safe
-            # window filter, so flat articles can't leak future news (#1007).
+            # window filter, so flat articles can't leak future news.
             data = _extract_article_data(article)
             if not _in_news_window(data["pub_date"], start_dt, curr_dt):
                 continue
@@ -209,7 +209,7 @@ def get_global_news_yfinance(
             kept += 1
 
         # All candidates fell outside the window -> say so rather than return an
-        # empty-bodied report (#993).
+        # empty-bodied report.
         if kept == 0:
             return f"No global news found between {start_date} and {curr_date}"
 

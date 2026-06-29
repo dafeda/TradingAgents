@@ -13,19 +13,17 @@ from langgraph.prebuilt import ToolNode
 # Import the abstract tool methods from agent_utils
 from tradingagents.agents.utils.agent_utils import (
     build_instrument_context,
-    get_balance_sheet,
-    get_cashflow,
-    get_fundamentals,
+    get_carbon_price,
+    get_gas_storage,
     get_global_news,
-    get_income_statement,
     get_indicators,
-    get_insider_transactions,
     get_macro_indicators,
     get_news,
+    get_pipeline_flows,
     get_prediction_markets,
     get_stock_data,
     get_verified_market_snapshot,
-    resolve_instrument_identity,
+    get_weather,
 )
 from tradingagents.agents.utils.memory import TradingMemoryLog
 from tradingagents.dataflows.config import set_config
@@ -175,27 +173,26 @@ class TradingAgentsGraph:
             ),
             "social": ToolNode(
                 [
-                    # News tools for social media analysis
+                    # News tool for the energy-news sentiment analyst
                     get_news,
                 ]
             ),
             "news": ToolNode(
                 [
-                    # News and insider information
+                    # News and macro/event context
                     get_news,
                     get_global_news,
-                    get_insider_transactions,
                     get_macro_indicators,
                     get_prediction_markets,
                 ]
             ),
             "fundamentals": ToolNode(
                 [
-                    # Fundamental analysis tools
-                    get_fundamentals,
-                    get_balance_sheet,
-                    get_cashflow,
-                    get_income_statement,
+                    # Gas supply/demand tools (repurposed "fundamentals" analyst)
+                    get_gas_storage,
+                    get_weather,
+                    get_pipeline_flows,
+                    get_carbon_price,
                 ]
             ),
         }
@@ -203,36 +200,40 @@ class TradingAgentsGraph:
     def _resolve_benchmark(self, ticker: str) -> str:
         """Pick the benchmark ticker for alpha calculation against ``ticker``.
 
-        ``config["benchmark_ticker"]`` overrides everything when set; otherwise
-        the suffix map matches the ticker's exchange suffix (e.g. ``.T`` for
-        Tokyo). US-listed tickers without a dotted suffix fall through to the
-        empty-suffix entry (SPY by default). Unrecognised suffixes (including
-        US tickers with dots like ``BRK.B``) also fall back to the empty-suffix
-        entry, which is the right default because the alpha calculation works
-        in USD.
+        Precedence (first wins): explicit ``config["benchmark_ticker"]``
+        override -> the instrument profile's symmetric spread leg (TTF=F ->
+        ``NG=F``, NG=F -> ``TTF=F``) so alpha reads as the TTF–HH spread in
+        either direction -> the traded instrument itself (absolute return)
+        for unknown tickers or when the profile has no benchmark.
         """
         explicit = self.config.get("benchmark_ticker")
         if explicit:
             return explicit
-        benchmark_map = self.config.get("benchmark_map", {})
-        ticker_upper = ticker.upper()
-        for suffix, benchmark in benchmark_map.items():
-            if suffix and ticker_upper.endswith(suffix.upper()):
-                return benchmark
-        return benchmark_map.get("", "SPY")
+        try:
+            from tradingagents.instrument_profiles import get_profile
+
+            return get_profile(ticker).benchmark_ticker or ticker
+        except KeyError:
+            return ticker
 
     def _fetch_returns(
         self, ticker: str, trade_date: str, holding_days: int = 5,
-        benchmark: str = "SPY",
+        benchmark: str | None = None,
     ) -> tuple[float | None, float | None, int | None]:
         """Fetch raw and alpha return for ticker over holding_days from trade_date.
 
         ``benchmark`` is the index used as the alpha baseline (resolved by the
-        caller via ``_resolve_benchmark``). Returns ``(raw_return, alpha_return,
+        caller via ``_resolve_benchmark``). ``None`` falls back to the traded
+        instrument itself (absolute return). Returns ``(raw_return, alpha_return,
         actual_holding_days)`` or ``(None, None, None)`` if price data is
         unavailable (too recent, delisted, or network error).
         """
         from tradingagents.dataflows.symbol_utils import normalize_symbol
+
+        # ``None`` benchmark = absolute return (benchmark against the traded
+        # instrument itself). Callers normally pass the value from
+        # ``_resolve_benchmark``; the fallback keeps the no-arg call path safe.
+        bench_sym = benchmark or normalize_symbol(ticker)
 
         try:
             start = datetime.strptime(trade_date, "%Y-%m-%d")
@@ -240,10 +241,10 @@ class TradingAgentsGraph:
             end_str = end.strftime("%Y-%m-%d")
 
             # Normalize so the realized-return lookup hits the same instrument
-            # the analysis priced (e.g. XAUUSD -> GC=F) (#984). The benchmark is
+            # the analysis priced (e.g. XAUUSD -> GC=F). The benchmark is
             # already a canonical Yahoo symbol from ``_resolve_benchmark``.
             stock = yf.Ticker(normalize_symbol(ticker)).history(start=trade_date, end=end_str)
-            bench = yf.Ticker(benchmark).history(start=trade_date, end=end_str)
+            bench = yf.Ticker(bench_sym).history(start=trade_date, end=end_str)
 
             if len(stock) < 2 or len(bench) < 2:
                 return None, None, None
@@ -306,27 +307,14 @@ class TradingAgentsGraph:
         if updates:
             self.memory_log.batch_update_with_outcomes(updates)
 
-    def resolve_instrument_context(self, ticker: str, asset_type: str = "stock") -> str:
-        """Resolve ticker identity once and return the full instrument context.
+    def propagate(self, company_name, trade_date):
+        """Run the trading agents graph for a gas contract on a specific date.
 
-        Deterministic yfinance lookup (cached, fail-open) injected into a
-        context string so every agent anchors to the real company instead of
-        hallucinating one from the price chart (#814). Both the propagate()
-        path and the CLI call this so the resolved identity reaches the whole
-        graph regardless of entry point.
-        """
-        identity = resolve_instrument_identity(ticker)
-        return build_instrument_context(ticker, asset_type, identity)
-
-    def propagate(self, company_name, trade_date, asset_type: str = "stock"):
-        """Run the trading agents graph for a company on a specific date.
-
-        ``asset_type`` selects between the stock pipeline (default) and the
-        crypto pipeline (``"crypto"``) shipped in #567 — the CLI auto-detects
-        from the ticker; programmatic callers pass it explicitly. When
-        ``checkpoint_enabled`` is set in config, the graph is recompiled with
-        a per-ticker SqliteSaver so a crashed run can resume from the last
-        successful node on a subsequent invocation with the same ticker+date.
+        ``company_name`` is the Yahoo gas symbol (``TTF=F`` Dutch TTF or
+        ``NG=F`` Henry Hub — both traded). When ``checkpoint_enabled`` is set
+        in config, the graph is recompiled with a per-ticker SqliteSaver so a
+        crashed run can resume from the last successful node on a subsequent
+        invocation with the same ticker+date.
         """
         self.ticker = company_name
 
@@ -352,7 +340,7 @@ class TradingAgentsGraph:
                 logger.info("Starting fresh for %s on %s", company_name, trade_date)
 
         try:
-            return self._run_graph(company_name, trade_date, asset_type=asset_type)
+            return self._run_graph(company_name, trade_date)
         finally:
             if self._checkpointer_ctx is not None:
                 self._checkpointer_ctx.__exit__(None, None, None)
@@ -374,16 +362,15 @@ class TradingAgentsGraph:
             )
         return write_report_tree(final_state, ticker, save_path)
 
-    def _run_graph(self, company_name, trade_date, asset_type: str = "stock"):
+    def _run_graph(self, company_name, trade_date):
         """Execute the graph and write the resulting state to disk and memory log."""
         # Initialize state — inject memory log context for PM and the
         # deterministically resolved instrument identity for all agents.
         past_context = self.memory_log.get_past_context(company_name)
-        instrument_context = self.resolve_instrument_context(company_name, asset_type)
+        instrument_context = build_instrument_context(company_name)
         init_agent_state = self.propagator.create_initial_state(
             company_name,
             trade_date,
-            asset_type=asset_type,
             past_context=past_context,
             instrument_context=instrument_context,
         )
@@ -402,7 +389,7 @@ class TradingAgentsGraph:
                     msg = chunk["messages"][-1]
                     # Nodes after the trader don't append to messages, so the
                     # same trailing message repeats across chunks. Print it only
-                    # when it changes (#1027); the trace/state merge is unchanged.
+                    # when it changes; the trace/state merge is unchanged.
                     signature = (type(msg).__name__, getattr(msg, "content", None))
                     if signature != last_printed:
                         msg.pretty_print()

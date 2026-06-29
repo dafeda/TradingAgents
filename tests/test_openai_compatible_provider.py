@@ -2,7 +2,7 @@
 
 Verifies the user-supplied base_url is required and honored, the key is optional
 (keyless local default), Chat Completions (not the Responses API) is used, any
-model name is accepted, and the env backend URL precedence (#978).
+model name is accepted, and the env backend URL precedence.
 """
 
 import pytest
@@ -77,7 +77,7 @@ def test_env_backend_url_precedence():
 @pytest.mark.unit
 def test_structured_output_suppresses_object_tool_choice(monkeypatch):
     # LM Studio / vLLM reject the object-form tool_choice langchain sends for
-    # function-calling structured output (#1057). The generic provider binds the
+    # function-calling structured output. The generic provider binds the
     # schema as a tool but must not force tool_choice.
     from langchain_openai import ChatOpenAI
     from pydantic import BaseModel

@@ -1,4 +1,4 @@
-"""Tests for Anthropic effort-parameter gating (#831).
+"""Tests for Anthropic effort-parameter gating.
 
 Haiku (any version) and Sonnet 4.5 reject the ``effort`` parameter with a
 400. Only Opus 4.5+ and Sonnet 4.6+ accept it. The gate uses a per-family

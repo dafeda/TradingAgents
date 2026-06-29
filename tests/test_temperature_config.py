@@ -1,4 +1,4 @@
-"""Tests for the configurable sampling temperature (#178/#168).
+"""Tests for the configurable sampling temperature.
 
 Temperature is a cross-provider knob: when set it must reach the underlying
 chat client; when unset the provider keeps its own default.

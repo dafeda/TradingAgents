@@ -1,4 +1,4 @@
-"""Tests for tolerating a non-`Date` index column in stockstats_utils (#890).
+"""Tests for tolerating a non-`Date` index column in stockstats_utils.
 
 Guards against a download frame whose date column is `index` or `Datetime`
 instead of `Date`, which would otherwise silently drop every indicator.

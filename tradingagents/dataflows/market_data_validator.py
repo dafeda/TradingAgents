@@ -2,7 +2,7 @@
 
 The market analyst is an LLM that can confabulate exact numbers — citing a
 Bollinger band or a "historically validated bounce" that the underlying data
-doesn't support (#830). This module computes a ground-truth snapshot (latest
+doesn't support. This module computes a ground-truth snapshot (latest
 OHLCV row on or before the analysis date, common indicators, recent closes)
 the analyst is told to treat as the source of truth for any exact numeric
 claim. Deterministic, no LLM involved.

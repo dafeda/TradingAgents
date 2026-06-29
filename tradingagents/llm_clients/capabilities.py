@@ -41,7 +41,7 @@ class ModelCapabilities:
     # <think> block lands in ``reasoning_details`` instead of polluting
     # ``content``. The flag is rejected by non-reasoning MiniMax models
     # (Coding Plan, MiniMax-Text-01, etc.), so we only set it where the
-    # model actually consumes it. (#826)
+    # model actually consumes it.
     requires_reasoning_split: bool = False
 
 

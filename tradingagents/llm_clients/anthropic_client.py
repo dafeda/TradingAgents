@@ -13,7 +13,7 @@ _PASSTHROUGH_KWARGS = (
 
 # Anthropic's extended-thinking ``effort`` parameter is accepted by Opus 4.5+
 # and Sonnet 4.6+ only. Sonnet 4.5 and any Haiku version 400 with
-# ``"This model does not support the effort parameter"`` (#831). The per-family
+# ``"This model does not support the effort parameter"``. The per-family
 # minimum version below is forward-compatible: future ``claude-{opus,sonnet}-X-Y``
 # releases inherit support automatically, while Sonnet 4.5 and Haiku stay excluded.
 _EFFORT_EXACT = {

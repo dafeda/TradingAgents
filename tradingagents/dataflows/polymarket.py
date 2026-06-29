@@ -1,9 +1,10 @@
 """Polymarket prediction-market vendor.
 
-Surfaces live, market-implied probabilities for forward-looking events (Fed
-decisions, recession, elections, geopolitics, crypto) to the news analyst, as a
-complement to news (what happened) and FRED macro data (where things stand):
-what the crowd actually prices to happen next.
+Surfaces live, market-implied probabilities for forward-looking events relevant
+to the gas market (EU energy policy, sanctions, geopolitics, recession/demand,
+cold-winter risk) to the news analyst, as a complement to news (what happened)
+and FRED macro data (where things stand): what the crowd actually prices to
+happen next.
 
 Uses Polymarket's public Gamma API (https://gamma-api.polymarket.com) — no key,
 no auth. Each market's ``outcomePrices`` are the implied probabilities of its
@@ -69,8 +70,8 @@ def get_prediction_markets(topic: str, limit: int | None = None) -> str:
     """Return live prediction-market probabilities for an event topic.
 
     Args:
-        topic: Event keyword(s), e.g. "Fed rate cut", "recession 2026",
-            "US election", or a sector/company event.
+        topic: Event keyword(s), e.g. "EU gas price cap", "Russia pipeline
+            sanctions", "cold winter Europe", or "recession 2026".
         limit: Max markets to return (ranked by traded volume); ``None`` uses
             DEFAULT_LIMIT.
 
@@ -110,8 +111,8 @@ def get_prediction_markets(topic: str, limit: int | None = None) -> str:
     if not candidates:
         return header + (
             f"No open prediction markets matched '{topic}'. Polymarket coverage "
-            f"is concentrated in macro, political, geopolitical, and crypto "
-            f"events; a specific equity may have none."
+            f"is concentrated in macro, political, and geopolitical events; try "
+            f"broader energy/geopolitical terms (sanctions, recession, EU policy)."
         )
 
     lines = []

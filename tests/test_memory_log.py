@@ -62,7 +62,7 @@ def _price_df(prices):
 def _make_pm_state(past_context=""):
     """Minimal AgentState dict for portfolio_manager_node."""
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "past_context": past_context,
         "risk_debate_state": {
             "history": "Risk debate history.",
@@ -521,87 +521,46 @@ class TestDeferredReflection:
             raw, alpha, days = TradingAgentsGraph._fetch_returns(mock_graph, "XXXXXFAKE", "2026-01-10")
         assert raw is None and alpha is None and days is None
 
-    def test_fetch_returns_spy_shorter_than_stock(self):
-        """SPY having fewer rows than the stock must not raise IndexError."""
+    def test_fetch_returns_benchmark_shorter_than_instrument(self):
+        """The benchmark having fewer rows than the instrument must not raise IndexError."""
         stock_prices = [100.0, 102.0, 104.0, 103.0, 105.0, 106.0]
-        spy_prices   = [400.0, 402.0, 403.0]
+        bench_prices = [400.0, 402.0, 403.0]
         mock_graph = MagicMock(spec=TradingAgentsGraph)
         with patch("yfinance.Ticker") as mock_ticker_cls:
             def _make_ticker(sym):
                 m = MagicMock()
-                m.history.return_value = _price_df(spy_prices if sym == "SPY" else stock_prices)
+                m.history.return_value = _price_df(bench_prices if sym == "NG=F" else stock_prices)
                 return m
             mock_ticker_cls.side_effect = _make_ticker
-            raw, alpha, days = TradingAgentsGraph._fetch_returns(mock_graph, "NVDA", "2026-01-05")
+            raw, alpha, days = TradingAgentsGraph._fetch_returns(
+                mock_graph, "TTF=F", "2026-01-05", benchmark="NG=F",
+            )
         assert raw is not None and alpha is not None and days is not None
         assert days == 2
 
-    # TradingAgentsGraph._resolve_benchmark — picks index for alpha calc
+    # TradingAgentsGraph._resolve_benchmark — picks the alpha-calc benchmark
 
     def test_resolve_benchmark_explicit_override(self):
-        """config['benchmark_ticker'] wins for every ticker."""
+        """config['benchmark_ticker'] is used for every ticker."""
         mock_graph = MagicMock(spec=TradingAgentsGraph)
-        mock_graph.config = {
-            "benchmark_ticker": "QQQ",
-            "benchmark_map": {"": "SPY", ".T": "^N225"},
-        }
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "7203.T") == "QQQ"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "NVDA") == "QQQ"
+        mock_graph.config = {"benchmark_ticker": "NG=F"}
+        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "TTF=F") == "NG=F"
+        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "ANY") == "NG=F"
 
-    def test_resolve_benchmark_suffix_map(self):
-        """Known suffixes route to their regional index."""
+    def test_resolve_benchmark_profile_symmetric(self):
+        """With no explicit benchmark, the instrument profile supplies the
+        symmetric spread leg: TTF=F -> NG=F, NG=F -> TTF=F."""
         mock_graph = MagicMock(spec=TradingAgentsGraph)
-        mock_graph.config = {
-            "benchmark_ticker": None,
-            "benchmark_map": {
-                ".T": "^N225", ".HK": "^HSI", ".NS": "^NSEI",
-                ".L": "^FTSE", ".TO": "^GSPTSE", ".AX": "^AXJO",
-                ".BO": "^BSESN", "": "SPY",
-            },
-        }
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "7203.T") == "^N225"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "0700.HK") == "^HSI"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "RELIANCE.NS") == "^NSEI"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "AZN.L") == "^FTSE"
+        mock_graph.config = {"benchmark_ticker": None}
+        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "TTF=F") == "NG=F"
+        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "NG=F") == "TTF=F"
 
-    def test_resolve_benchmark_china_a_shares(self):
-        """A-share tickers route to their exchange composite (uses the real
-        default benchmark_map, since A-share support relies on it)."""
-        from tradingagents.default_config import DEFAULT_CONFIG
+    def test_resolve_benchmark_falls_back_to_traded_instrument(self):
+        """With no benchmark and no profile (e.g. an equity), alpha is measured
+        against the traded instrument itself (absolute return)."""
         mock_graph = MagicMock(spec=TradingAgentsGraph)
-        mock_graph.config = {"benchmark_ticker": None,
-                             "benchmark_map": DEFAULT_CONFIG["benchmark_map"]}
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "600519.SS") == "000001.SS"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "000001.SZ") == "399001.SZ"
-
-    def test_resolve_benchmark_us_ticker_defaults_to_spy(self):
-        """US tickers (no dotted suffix) take the empty-suffix entry."""
-        mock_graph = MagicMock(spec=TradingAgentsGraph)
-        mock_graph.config = {
-            "benchmark_ticker": None,
-            "benchmark_map": {"": "SPY", ".T": "^N225"},
-        }
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "NVDA") == "SPY"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "AAPL") == "SPY"
-
-    def test_resolve_benchmark_unknown_suffix_falls_back(self):
-        """Unrecognised suffix (BRK.B, FAKE.XX) falls back to SPY."""
-        mock_graph = MagicMock(spec=TradingAgentsGraph)
-        mock_graph.config = {
-            "benchmark_ticker": None,
-            "benchmark_map": {"": "SPY", ".T": "^N225"},
-        }
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "FAKE.XX") == "SPY"
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "BRK.B") == "SPY"
-
-    def test_resolve_benchmark_case_insensitive(self):
-        """Suffix matching is case-insensitive so 7203.t resolves like 7203.T."""
-        mock_graph = MagicMock(spec=TradingAgentsGraph)
-        mock_graph.config = {
-            "benchmark_ticker": None,
-            "benchmark_map": {".T": "^N225", "": "SPY"},
-        }
-        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "7203.t") == "^N225"
+        mock_graph.config = {"benchmark_ticker": None}
+        assert TradingAgentsGraph._resolve_benchmark(mock_graph, "AAPL") == "AAPL"
 
     def test_reflector_includes_benchmark_in_label(self):
         """benchmark_name appears in the prompt label, not 'SPY' hardcoded."""
@@ -617,10 +576,10 @@ class TestDeferredReflection:
         messages = mock_llm.invoke.call_args[0][0]
         human_content = next(content for role, content in messages if role == "human")
         assert "Alpha vs ^N225:" in human_content
-        assert "Alpha vs SPY:" not in human_content
+        assert "Alpha vs NG=F:" not in human_content
 
-    def test_reflector_defaults_to_spy_for_unupdated_callers(self):
-        """Default benchmark_name keeps the SPY label for legacy callers."""
+    def test_reflector_defaults_to_ng_for_unupdated_callers(self):
+        """Default benchmark_name keeps the NG=F (TTF–HH spread) label."""
         mock_llm = MagicMock()
         mock_llm.invoke.return_value.content = "ok"
         reflector = Reflector(mock_llm)
@@ -631,7 +590,7 @@ class TestDeferredReflection:
         )
         messages = mock_llm.invoke.call_args[0][0]
         human_content = next(content for role, content in messages if role == "human")
-        assert "Alpha vs SPY:" in human_content
+        assert "Alpha vs NG=F:" in human_content
 
     # TradingAgentsGraph._resolve_pending_entries
 
@@ -830,8 +789,8 @@ class TestLegacyRemoval:
         import functools
 
         fake_state = {
-            "final_trade_decision": "Rating: Buy\nBuy NVDA.",
-            "company_of_interest": "NVDA",
+            "final_trade_decision": "Rating: Buy\nBuy TTF=F.",
+            "company_of_interest": "TTF=F",
             "trade_date": "2026-01-10",
             "market_report": "",
             "sentiment_report": "",
@@ -864,8 +823,8 @@ class TestLegacyRemoval:
         mock_graph._run_graph = functools.partial(
             TradingAgentsGraph._run_graph, mock_graph
         )
-        TradingAgentsGraph.propagate(mock_graph, "NVDA", "2026-01-10")
+        TradingAgentsGraph.propagate(mock_graph, "TTF=F", "2026-01-10")
         entries = mock_graph.memory_log.load_entries()
         assert len(entries) == 1
-        assert entries[0]["ticker"] == "NVDA"
+        assert entries[0]["ticker"] == "TTF=F"
         assert entries[0]["pending"] is True

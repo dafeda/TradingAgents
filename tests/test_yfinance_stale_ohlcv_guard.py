@@ -1,4 +1,4 @@
-"""Stale OHLCV guard (#1021): a vendor returning a year-old partial frame must
+"""Stale OHLCV guard: a vendor returning a year-old partial frame must
 be rejected, not fed into the report as if it were current.
 
 The guard raises NoMarketDataError with a stale-specific detail, so the router's

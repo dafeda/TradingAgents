@@ -50,9 +50,9 @@ class GraphSetup:
         Args:
             selected_analysts (list): List of analyst types to include. Options are:
                 - "market": Market analyst
-                - "social": Social media analyst
+                - "social": Sentiment analyst (energy-news positioning)
                 - "news": News analyst
-                - "fundamentals": Fundamentals analyst
+                - "fundamentals": Fundamentals analyst (gas supply/demand)
         """
         plan = build_analyst_execution_plan(selected_analysts)
 

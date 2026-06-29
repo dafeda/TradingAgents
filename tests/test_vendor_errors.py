@@ -11,10 +11,6 @@ import pytest
 import tradingagents.dataflows.config as config_module
 import tradingagents.default_config as default_config
 from tradingagents.dataflows import interface
-from tradingagents.dataflows.alpha_vantage_common import (
-    AlphaVantageNotConfiguredError,
-    AlphaVantageRateLimitError,
-)
 from tradingagents.dataflows.config import set_config
 from tradingagents.dataflows.errors import (
     NoMarketDataError,
@@ -36,8 +32,6 @@ class HierarchyTests(unittest.TestCase):
         self.assertTrue(issubclass(VendorNotConfiguredError, ValueError))
 
     def test_vendor_named_errors_subclass_the_generic_bases(self):
-        self.assertTrue(issubclass(AlphaVantageRateLimitError, VendorRateLimitError))
-        self.assertTrue(issubclass(AlphaVantageNotConfiguredError, VendorNotConfiguredError))
         self.assertTrue(issubclass(FredNotConfiguredError, VendorNotConfiguredError))
         # ... and therefore still ValueErrors
         self.assertTrue(issubclass(FredNotConfiguredError, ValueError))
@@ -59,46 +53,46 @@ class RouterHandlesBaseTypesTests(unittest.TestCase):
 
     def test_rate_limit_subclass_caught_by_base(self):
         # A vendor-named rate-limit error skips to the next vendor in the chain.
-        set_config({"data_vendors": {"core_stock_apis": "alpha_vantage,yfinance"}})
+        set_config({"data_vendors": {"core_stock_apis": "vendor_a,yfinance"}})
 
         def _throttled(*a, **k):
-            raise AlphaVantageRateLimitError("slow down")
+            raise VendorRateLimitError("slow down")
 
         with mock.patch.dict(
             interface.VENDOR_METHODS,
-            {"get_stock_data": {"alpha_vantage": _throttled, "yfinance": lambda *a, **k: "YF"}},
+            {"get_stock_data": {"vendor_a": _throttled, "yfinance": lambda *a, **k: "YF"}},
             clear=False,
         ):
-            out = interface.route_to_vendor("get_stock_data", "AAPL", "2026-01-01", "2026-01-10")
+            out = interface.route_to_vendor("get_stock_data", "TTF=F", "2026-01-01", "2026-01-10")
         self.assertEqual(out, "YF")
 
     def test_not_configured_falls_through_to_next_vendor(self):
-        set_config({"data_vendors": {"core_stock_apis": "alpha_vantage,yfinance"}})
+        set_config({"data_vendors": {"core_stock_apis": "vendor_a,yfinance"}})
 
         def _unconfigured(*a, **k):
-            raise AlphaVantageNotConfiguredError("no key")
+            raise VendorNotConfiguredError("no key")
 
         with mock.patch.dict(
             interface.VENDOR_METHODS,
-            {"get_stock_data": {"alpha_vantage": _unconfigured, "yfinance": lambda *a, **k: "YF"}},
+            {"get_stock_data": {"vendor_a": _unconfigured, "yfinance": lambda *a, **k: "YF"}},
             clear=False,
         ):
-            out = interface.route_to_vendor("get_stock_data", "AAPL", "2026-01-01", "2026-01-10")
+            out = interface.route_to_vendor("get_stock_data", "TTF=F", "2026-01-01", "2026-01-10")
         self.assertEqual(out, "YF")
 
     def test_sole_unconfigured_vendor_surfaces_the_error(self):
         # With no fallback, the not-configured condition must surface (not vanish).
-        set_config({"data_vendors": {"core_stock_apis": "alpha_vantage"}})
+        set_config({"data_vendors": {"core_stock_apis": "vendor_a"}})
 
         def _unconfigured(*a, **k):
-            raise AlphaVantageNotConfiguredError("no key")
+            raise VendorNotConfiguredError("no key")
 
         with mock.patch.dict(
             interface.VENDOR_METHODS,
-            {"get_stock_data": {"alpha_vantage": _unconfigured}},
+            {"get_stock_data": {"vendor_a": _unconfigured}},
             clear=False,
-        ), self.assertRaises(AlphaVantageNotConfiguredError):
-            interface.route_to_vendor("get_stock_data", "AAPL", "2026-01-01", "2026-01-10")
+        ), self.assertRaises(VendorNotConfiguredError):
+            interface.route_to_vendor("get_stock_data", "TTF=F", "2026-01-01", "2026-01-10")
 
 
 if __name__ == "__main__":

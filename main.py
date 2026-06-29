@@ -12,7 +12,8 @@ config = DEFAULT_CONFIG.copy()
 ta = TradingAgentsGraph(debug=True, config=config)
 
 # forward propagate
-_, decision = ta.propagate("NVDA", "2024-05-10")
+# Dutch TTF gas front-month future (NG=F is available as the spread reference).
+_, decision = ta.propagate("TTF=F", "2024-05-10")
 print(decision)
 
 # Memorize mistakes and reflect

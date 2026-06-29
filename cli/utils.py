@@ -5,13 +5,11 @@ import questionary
 from dotenv import find_dotenv, set_key
 from rich.console import Console
 
-from cli.models import AnalystType, AssetType
+from cli.models import AnalystType
 from tradingagents.llm_clients.api_key_env import get_api_key_env
 from tradingagents.llm_clients.model_catalog import get_model_options
 
 console = Console()
-
-TICKER_INPUT_EXAMPLES = "SPY, 0700.HK, BTC-USD"
 
 ANALYST_ORDER = [
     ("Market Analyst", AnalystType.MARKET),
@@ -20,46 +18,39 @@ ANALYST_ORDER = [
     ("Fundamentals Analyst", AnalystType.FUNDAMENTALS),
 ]
 
-CRYPTO_SUFFIXES = ("-USD", "-USDT", "-USDC", "-BTC", "-ETH")
-
-
-def is_valid_ticker_input(value: str) -> bool:
-    """Whether a ticker entry is acceptable (charset + length).
-
-    Allows the characters Yahoo symbols use, including ``=`` for futures/forex
-    like ``GC=F`` and ``EURUSD=X`` (#980), and ``^`` for indices. Empty input is
-    allowed (it defaults to SPY downstream).
-    """
-    v = value.strip()
-    return not v or (all(ch.isalnum() or ch in "._-^=" for ch in v) and len(v) <= 32)
+# Both TTF=F (Dutch TTF, EUR/MWh) and NG=F (Henry Hub, USD/MMBtu) are traded
+# as first-class contracts. Each is the other's alpha benchmark (TTF–HH spread).
+TRADABLE_CONTRACTS = [
+    ("Dutch TTF — front-month gas future (EUR/MWh)", "TTF=F"),
+    ("Henry Hub — front-month US gas future (USD/MMBtu)", "NG=F"),
+]
 
 
 def get_ticker() -> str:
-    """Prompt the user to enter a ticker symbol, preserving exchange suffixes.
+    """Prompt the user to choose which gas contract to analyze.
 
-    Uses questionary.text (not typer.prompt, which strips trailing dot-suffixes
-    like ``000404.SH`` on some shells) and validates the symbol charset so an
-    obvious typo is caught before the run starts.
+    Returns the canonical Yahoo symbol (``TTF=F`` or ``NG=F`` — both traded).
     """
-    ticker = questionary.text(
-        f"Enter ticker symbol (e.g. {TICKER_INPUT_EXAMPLES}):",
-        validate=lambda x: (
-            is_valid_ticker_input(x)
-            or "Please enter a valid ticker symbol, e.g. AAPL, 000404.SZ, 0700.HK, GC=F."
-        ),
+    choice = questionary.select(
+        "Select the gas contract to analyze:",
+        choices=[
+            questionary.Choice(label, value=value)
+            for label, value in TRADABLE_CONTRACTS
+        ],
         style=questionary.Style(
             [
-                ("text", "fg:green"),
+                ("selected", "fg:green noinherit"),
                 ("highlighted", "noinherit"),
+                ("pointer", "fg:green noinherit"),
             ]
         ),
     ).ask()
 
-    if ticker is None:
-        console.print("\n[red]No ticker symbol provided. Exiting...[/red]")
+    if choice is None:
+        console.print("\n[red]No contract selected. Exiting...[/red]")
         exit(1)
 
-    return normalize_ticker_symbol(ticker) if ticker.strip() else "SPY"
+    return choice
 
 
 def normalize_ticker_symbol(ticker: str) -> str:
@@ -67,8 +58,8 @@ def normalize_ticker_symbol(ticker: str) -> str:
 
     Delegates to the data layer's ``normalize_symbol`` so the symbol the CLI
     passes through the pipeline is exactly the one the data path will price
-    (e.g. ``BTCUSD`` -> ``BTC-USD``, ``XAUUSD`` -> ``GC=F``). Falls back to the
-    plain upper-case if the data layer is unavailable.
+    (e.g. ``TTF`` -> ``TTF=F``). Falls back to the plain upper-case if the data
+    layer is unavailable.
     """
     try:
         from tradingagents.dataflows.symbol_utils import normalize_symbol
@@ -76,27 +67,6 @@ def normalize_ticker_symbol(ticker: str) -> str:
         return normalize_symbol(ticker)
     except Exception:
         return ticker.strip().upper()
-
-
-def detect_asset_type(ticker: str) -> AssetType:
-    """Classify on the canonical symbol so e.g. BTCUSD and BTC-USDT both read as
-    crypto (#981/#982), matching what the data path will actually fetch."""
-    canonical = normalize_ticker_symbol(ticker)
-    if canonical.endswith(CRYPTO_SUFFIXES):
-        return AssetType.CRYPTO
-    return AssetType.STOCK
-
-
-def filter_analysts_for_asset_type(
-    analysts: list[AnalystType], asset_type: AssetType
-) -> list[AnalystType]:
-    if asset_type != AssetType.CRYPTO:
-        return analysts
-    return [
-        analyst
-        for analyst in analysts
-        if analyst != AnalystType.FUNDAMENTALS
-    ]
 
 
 def get_analysis_date() -> str:
@@ -132,18 +102,13 @@ def get_analysis_date() -> str:
     return date.strip()
 
 
-def select_analysts(asset_type: AssetType = AssetType.STOCK) -> list[AnalystType]:
+def select_analysts() -> list[AnalystType]:
     """Select analysts using an interactive checkbox."""
-    available_analysts = filter_analysts_for_asset_type(
-        [value for _, value in ANALYST_ORDER],
-        asset_type,
-    )
     choices = questionary.checkbox(
         "Select Your [Analysts Team]:",
         choices=[
             questionary.Choice(display, value=value)
             for display, value in ANALYST_ORDER
-            if value in available_analysts
         ],
         instruction="\n- Press Space to select/unselect analysts\n- Press 'a' to select/unselect all\n- Press Enter when done",
         validate=lambda x: len(x) > 0 or "You must select at least one analyst.",
@@ -247,7 +212,7 @@ def select_openrouter_model(mode: str) -> str:
     """Select an OpenRouter model from the newest available, or enter a custom ID.
 
     ``mode`` ("quick"/"deep") labels the prompt so the two consecutive
-    OpenRouter selections are distinguishable, like the other providers (#1000).
+    OpenRouter selections are distinguishable, like the other providers.
     """
     models = _fetch_openrouter_models()  # newest first
     # Prefer the newest from mainstream providers so the shortlist isn't crowded
@@ -382,7 +347,7 @@ def resolve_backend_url(
 
     An explicit env override (``env_url``, from ``TRADINGAGENTS_LLM_BACKEND_URL``
     via ``DEFAULT_CONFIG['backend_url']``) is honored regardless of how the
-    provider was chosen — interactively or from the environment (#978).
+    provider was chosen — interactively or from the environment.
     Otherwise the menu/region URL, then the provider's default.
     """
     return env_url or menu_url or provider_default_url(provider)
@@ -648,41 +613,3 @@ def ensure_api_key(provider: str) -> str | None:
     os.environ[env_var] = key
     console.print(f"[green]Saved {env_var} to {env_path}[/green]")
     return key
-
-
-def ask_output_language() -> str:
-    """Ask for report output language."""
-    choice = questionary.select(
-        "Select Output Language:",
-        choices=[
-            questionary.Choice("English (default)", "English"),
-            questionary.Choice("Chinese (中文)", "Chinese"),
-            questionary.Choice("Japanese (日本語)", "Japanese"),
-            questionary.Choice("Korean (한국어)", "Korean"),
-            questionary.Choice("Hindi (हिन्दी)", "Hindi"),
-            questionary.Choice("Spanish (Español)", "Spanish"),
-            questionary.Choice("Portuguese (Português)", "Portuguese"),
-            questionary.Choice("French (Français)", "French"),
-            questionary.Choice("German (Deutsch)", "German"),
-            questionary.Choice("Arabic (العربية)", "Arabic"),
-            questionary.Choice("Russian (Русский)", "Russian"),
-            questionary.Choice("Custom language", "custom"),
-        ],
-        style=questionary.Style([
-            ("selected", "fg:yellow noinherit"),
-            ("highlighted", "fg:yellow noinherit"),
-            ("pointer", "fg:yellow noinherit"),
-        ]),
-    ).ask()
-
-    # Output language has a sensible default, so a cancel falls back to English
-    # rather than exiting the run (unlike the required model/provider prompts).
-    if choice is None:
-        return "English"
-    if choice == "custom":
-        return (questionary.text(
-            "Enter language name (e.g. Turkish, Vietnamese, Thai, Indonesian):",
-            validate=lambda x: len(x.strip()) > 0 or "Please enter a language name.",
-        ).ask() or "").strip() or "English"
-
-    return choice

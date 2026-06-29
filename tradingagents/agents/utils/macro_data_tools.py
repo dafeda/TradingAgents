@@ -9,9 +9,9 @@ from tradingagents.dataflows.interface import route_to_vendor
 def get_macro_indicators(
     indicator: Annotated[
         str,
-        "Macro indicator: a friendly alias such as 'cpi', 'core_pce', "
-        "'unemployment', 'fed_funds_rate', '10y_treasury', 'yield_curve', "
-        "'real_gdp', 'vix', or a raw FRED series ID such as 'CPIAUCSL'.",
+        "Macro indicator: a friendly alias such as 'ecb_rate', 'eurusd', "
+        "'eu_inflation', 'fed_funds_rate', '10y_treasury', 'dollar_index', "
+        "or a raw FRED series ID such as 'ECBDFR'.",
     ],
     curr_date: Annotated[str, "Current date in yyyy-mm-dd format; the end of the window"],
     look_back_days: Annotated[
@@ -20,9 +20,10 @@ def get_macro_indicators(
 ) -> str:
     """
     Retrieve a macroeconomic indicator time series from FRED (Federal Reserve
-    Economic Data): policy rates, Treasury yields, inflation, labor, and growth.
-    Returns the series title, units, frequency, the latest value, the change
-    over the window, and a recent observation table. Uses the configured
+    Economic Data): euro-area policy (ECB rates, HICP, EUR/USD) plus globally-
+    relevant US series (Fed funds, Treasury yields, USD index) for the gas-market
+    backdrop. Returns the series title, units, frequency, the latest value, the
+    change over the window, and a recent observation table. Uses the configured
     macro_data vendor.
 
     Args:

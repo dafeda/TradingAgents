@@ -1,78 +1,35 @@
-<p align="center">
-  <img src="assets/TauricResearch.png" style="width: 60%; height: auto;">
-</p>
+# GasTradingAgents: Multi-Agent LLM Framework for Natural-Gas Trading
 
-<div align="center" style="line-height: 1;">
-  <a href="https://arxiv.org/abs/2412.20138" target="_blank"><img alt="arXiv" src="https://img.shields.io/badge/arXiv-2412.20138-B31B1B?logo=arxiv"/></a>
-  <a href="https://discord.com/invite/hk9PGKShPK" target="_blank"><img alt="Discord" src="https://img.shields.io/badge/Discord-TradingResearch-7289da?logo=discord&logoColor=white&color=7289da"/></a>
-  <a href="./assets/wechat.png" target="_blank"><img alt="WeChat" src="https://img.shields.io/badge/WeChat-TauricResearch-brightgreen?logo=wechat&logoColor=white"/></a>
-  <a href="https://x.com/TauricResearch" target="_blank"><img alt="X Follow" src="https://img.shields.io/badge/X-TauricResearch-white?logo=x&logoColor=white"/></a>
-  <br>
-  <a href="https://github.com/TauricResearch/" target="_blank"><img alt="Community" src="https://img.shields.io/badge/Join_GitHub_Community-TauricResearch-14C290?logo=discourse"/></a>
-</div>
-
-<div align="center">
-  <!-- Keep these links. Translations will automatically update with the README. -->
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=de">Deutsch</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=es">Español</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=fr">français</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=ja">日本語</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=ko">한국어</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=pt">Português</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=ru">Русский</a> | 
-  <a href="https://www.readme-i18n.com/TauricResearch/TradingAgents?lang=zh">中文</a>
-</div>
+> Based on [TradingAgents](https://github.com/TauricResearch/TradingAgents) by [Tauric Research](https://github.com/TauricResearch) — see [Acknowledgements](#acknowledgements).
 
 ---
 
-# TradingAgents: Multi-Agents LLM Financial Trading Framework
-
-## News
-- [2026-06] **TradingAgents v0.3.0** released with a verified data-access contract, an expanded provider registry (NVIDIA, Kimi, Groq, Mistral, Bedrock, and any OpenAI-compatible endpoint), FRED and Polymarket data vendors, a current-generation model catalog, and a CI gate. See [CHANGELOG.md](CHANGELOG.md) for the full list.
-- [2026-05] **TradingAgents v0.2.5** released with the grounded Sentiment Analyst, GPT-5.5 etc. model coverage, Qwen/GLM/MiniMax dual-region support, `TRADINGAGENTS_*` env-var configurability with API-key auto-detection, remote Ollama support, non-US alpha benchmarks, and ticker path-traversal hardening.
-- [2026-04] **TradingAgents v0.2.4** released with structured-output agents (Research Manager, Trader, Portfolio Manager), LangGraph checkpoint resume, persistent decision log, DeepSeek/Qwen/GLM/Azure provider support, Docker, and a Windows UTF-8 encoding fix.
-- [2026-03] **TradingAgents v0.2.3** released with multi-language support, GPT-5.4 family models, unified model catalog, backtesting date fidelity, and proxy support.
-- [2026-03] **TradingAgents v0.2.2** released with GPT-5.4/Gemini 3.1/Claude 4.6 model coverage, five-tier rating scale, OpenAI Responses API, Anthropic effort control, and cross-platform stability.
-- [2026-02] **TradingAgents v0.2.0** released with multi-provider LLM support (GPT-5.x, Gemini 3.x, Claude 4.x, Grok 4.x) and improved system architecture.
-- [2026-01] **Trading-R1** [Technical Report](https://arxiv.org/abs/2509.11420) released, with [Terminal](https://github.com/TauricResearch/Trading-R1) expected to land soon.
-
-<div align="center">
-<a href="https://www.star-history.com/#TauricResearch/TradingAgents&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=TauricResearch/TradingAgents&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=TauricResearch/TradingAgents&type=Date" />
-   <img alt="TradingAgents Star History" src="https://api.star-history.com/svg?repos=TauricResearch/TradingAgents&type=Date" style="width: 80%; height: auto;" />
- </picture>
-</a>
-</div>
-
-> 🎉 **TradingAgents** officially released! We have received numerous inquiries about the work, and we would like to express our thanks for the enthusiasm in our community.
->
-> So we decided to fully open-source the framework. Looking forward to building impactful projects with you!
-
 <div align="center">
 
-🚀 [TradingAgents](#tradingagents-framework) | ⚡ [Installation & CLI](#installation-and-cli) | 🎬 [Demo](https://www.youtube.com/watch?v=90gr5lwjIho) | 📦 [Package Usage](#tradingagents-package) | 🤝 [Contributing](#contributing) | 📄 [Citation](#citation)
+🚀 [GasTradingAgents](#gastradingagents-framework) | ⚡ [Installation & CLI](#installation-and-cli) | 📦 [Package Usage](#gastradingagents-package) | 🤝 [Contributing](#contributing) | 📄 [Acknowledgements](#acknowledgements)
 
 </div>
 
-## TradingAgents Framework
+## GasTradingAgents Framework
 
-TradingAgents is a multi-agent trading framework that mirrors the dynamics of real-world trading firms. By deploying specialized LLM-powered agents: from fundamental analysts, sentiment experts, and technical analysts, to trader, risk management team, the platform collaboratively evaluates market conditions and informs trading decisions. Moreover, these agents engage in dynamic discussions to pinpoint the optimal strategy.
+GasTradingAgents is a multi-agent framework that mirrors the dynamics of a real-world gas trading desk. By deploying specialized LLM-powered agents — from fundamentals, sentiment, and technical analysts, to trader and risk management — the platform collaboratively evaluates market conditions and informs trading decisions. Moreover, these agents engage in dynamic discussions to pinpoint the optimal strategy.
+
+> **GasTradingAgents is a gas-trading-desk build.** It trades **both** Dutch **TTF** front-month (`TTF=F`, EUR/MWh) and US **Henry Hub** front-month (`NG=F`, USD/MMBtu) as first-class instruments; each is the other's alpha benchmark (the TTF–Henry Hub spread). Instrument identity, currency units, and agent framing resolve per-contract from an instrument-profile table. Henry Hub currently runs without a supply/demand fundamentals analyst (no US storage/flow/weather vendors yet). The equity and crypto code paths from upstream have been removed: the "fundamentals" analyst reads the gas supply/demand balance (storage, weather, pipeline flows, EUA carbon) instead of company financials, and sentiment is read from the energy news flow rather than StockTwits/Reddit.
+
 
 <p align="center">
   <img src="assets/schema.png" style="width: 100%; height: auto;">
 </p>
 
-> TradingAgents framework is designed for research purposes. Trading performance may vary based on many factors, including the chosen backbone language models, model temperature, trading periods, the quality of data, and other non-deterministic factors. [It is not intended as financial, investment, or trading advice.](https://tauric.ai/disclaimer/)
+> GasTradingAgents is designed for research purposes. Trading performance may vary based on many factors, including the chosen backbone language models, model temperature, trading periods, the quality of data, and other non-deterministic factors. It is not intended as financial, investment, or trading advice.
 
 Our framework decomposes complex trading tasks into specialized roles.
 
 ### Analyst Team
-- Fundamentals Analyst: Evaluates company financials and performance metrics, identifying intrinsic values and potential red flags.
-- Sentiment Analyst: Aggregates news headlines, StockTwits, and Reddit chatter into a single sentiment read to gauge short-term market mood.
-- News Analyst: Monitors global news and macroeconomic indicators, interpreting the impact of events on market conditions.
-- Technical Analyst: Utilizes technical indicators (like MACD and RSI) to detect trading patterns and forecast price movements.
+- Fundamentals Analyst (gas supply/demand): Builds the European gas balance from AGSI+ storage fill, NW-Europe heating/cooling degree days, Norway pipeline + LNG sendout flows, and EUA carbon (coal-gas switching) to read whether the balance is tight or loose.
+- Sentiment Analyst (energy positioning): Reads desk positioning from the energy news flow — supply outages, LNG cargoes, storage headlines, weather scares, Norway maintenance — since gas has no retail cashtag feed.
+- News Analyst: Monitors global news, euro-area macro indicators (FRED), and prediction-market probabilities, interpreting the impact of events on the gas market.
+- Technical Analyst: Utilizes technical indicators (like MACD and RSI) on the traded gas contract (TTF=F or NG=F) to detect trading patterns, accounting for front-month seasonality and roll.
 
 <p align="center">
   <img src="assets/analyst.png" width="100%" style="display: inline-block; margin: 0 2%;">
@@ -104,10 +61,10 @@ Our framework decomposes complex trading tasks into specialized roles.
 
 ### Installation
 
-Clone TradingAgents:
+Clone GasTradingAgents:
 ```bash
-git clone https://github.com/TauricResearch/TradingAgents.git
-cd TradingAgents
+git clone https://github.com/<you>/GasTradingAgents.git
+cd GasTradingAgents
 ```
 
 Create a virtual environment in any of your favorite environment managers:
@@ -136,7 +93,7 @@ docker compose --profile ollama run --rm tradingagents-ollama
 
 ### Required APIs
 
-TradingAgents supports multiple LLM providers. Set the API key for your chosen provider:
+GasTradingAgents supports multiple LLM providers. Set the API key for your chosen provider:
 
 ```bash
 export OPENAI_API_KEY=...          # OpenAI (GPT)
@@ -151,7 +108,13 @@ export ZHIPU_CN_API_KEY=...        # GLM via BigModel (China, open.bigmodel.cn)
 export MINIMAX_API_KEY=...         # MiniMax — Global (api.minimax.io)
 export MINIMAX_CN_API_KEY=...      # MiniMax — China (api.minimaxi.com)
 export OPENROUTER_API_KEY=...      # OpenRouter
-export ALPHA_VANTAGE_API_KEY=...   # Alpha Vantage
+```
+
+Gas data sources: **FRED** (euro-area macro) and **GIE AGSI+** (gas storage) need free keys; ENTSOG pipeline flows, Open-Meteo weather, Polymarket, and EUA carbon (via yfinance) are keyless.
+
+```bash
+export FRED_API_KEY=...            # FRED macro data (https://fred.stlouisfed.org)
+export GIE_API_KEY=...             # GIE AGSI+ gas storage (https://agsi.gie.eu)
 ```
 
 For Azure OpenAI, copy `.env.enterprise.example` to `.env.enterprise` and fill in your credentials.
@@ -174,17 +137,16 @@ Launch the interactive CLI:
 tradingagents          # installed command
 python -m cli.main     # alternative: run directly from source
 ```
-You will see a screen where you can select your desired tickers, analysis date, LLM provider, research depth, and more.
+You will see a screen where you can select the gas contract (TTF=F or NG=F), analysis date, LLM provider, research depth, and more.
 
-### Markets and tickers
+### Instruments
 
-TradingAgents works with any market Yahoo Finance covers, using the exchange-suffixed ticker. Company identity and the alpha benchmark resolve automatically per market.
+This gas desk build trades two natural-gas futures via Yahoo Finance. Instrument identity and the alpha benchmark resolve per-contract from an instrument-profile table.
 
-- US: `AAPL`, `SPY`
-- Hong Kong: `0700.HK` · Tokyo: `7203.T` · London: `AZN.L`
-- India: `RELIANCE.NS`, `.BO` · Canada: `.TO` · Australia: `.AX`
-- China A-shares: Shanghai `.SS`, Shenzhen `.SZ` (e.g. `600519.SS` for Kweichow Moutai)
-- Crypto: `BTC-USD`, `ETH-USD`
+- **Dutch TTF** — `TTF=F` (front-month future, EUR/MWh). Full EU fundamentals stack (storage, weather, pipeline flows, EUA carbon).
+- **Henry Hub** — `NG=F` (front-month future, USD/MMBtu). Price/technical/news/sentiment only — no US supply/demand fundamentals vendors yet.
+
+Each contract is the other's alpha benchmark, so the reflection layer reads as the TTF–Henry Hub (global LNG arbitrage) spread in either direction. The CLI offers both contracts directly; you can also type `TTF` or `NATGAS`, which normalize to `TTF=F` / `NG=F`.
 
 <p align="center">
   <img src="assets/cli/cli_init.png" width="100%" style="display: inline-block; margin: 0 2%;">
@@ -200,15 +162,15 @@ An interface will appear showing results as they load, letting you track the age
   <img src="assets/cli/cli_transaction.png" width="100%" style="display: inline-block; margin: 0 2%;">
 </p>
 
-## TradingAgents Package
+## GasTradingAgents Package
 
 ### Implementation Details
 
-We built TradingAgents with LangGraph to ensure flexibility and modularity. The framework supports multiple LLM providers: OpenAI, Google, Anthropic, xAI, DeepSeek, Qwen (Alibaba DashScope, international and China endpoints), GLM (Zhipu), MiniMax (global + China), OpenRouter, Ollama for local models, and Azure OpenAI for enterprise.
+We built GasTradingAgents with LangGraph to ensure flexibility and modularity. The framework supports multiple LLM providers: OpenAI, Google, Anthropic, xAI, DeepSeek, Qwen (Alibaba DashScope, international and China endpoints), GLM (Zhipu), MiniMax (global + China), OpenRouter, Ollama for local models, and Azure OpenAI for enterprise.
 
 ### Python Usage
 
-To use TradingAgents inside your code, you can import the `tradingagents` module and initialize a `TradingAgentsGraph()` object. The `.propagate()` function will return a decision. You can run `main.py`, here's also a quick example:
+To use GasTradingAgents inside your code, you can import the `tradingagents` module and initialize a `TradingAgentsGraph()` object. The `.propagate()` function will return a decision. You can run `main.py`, here's also a quick example:
 
 ```python
 from tradingagents.graph.trading_graph import TradingAgentsGraph
@@ -217,7 +179,7 @@ from tradingagents.default_config import DEFAULT_CONFIG
 ta = TradingAgentsGraph(debug=True, config=DEFAULT_CONFIG.copy())
 
 # forward propagate
-_, decision = ta.propagate("NVDA", "2026-01-15")
+_, decision = ta.propagate("TTF=F", "2026-01-15")
 print(decision)
 ```
 
@@ -234,19 +196,42 @@ config["quick_think_llm"] = "gpt-5.4-mini" # Model for quick tasks
 config["max_debate_rounds"] = 2
 
 ta = TradingAgentsGraph(debug=True, config=config)
-_, decision = ta.propagate("NVDA", "2026-01-15")
+_, decision = ta.propagate("TTF=F", "2026-01-15")
 print(decision)
 ```
 
 See `tradingagents/default_config.py` for all configuration options.
 
+### News sources
+
+News defaults to a curated set of gas/energy RSS feeds via the `rss_feeds` vendor, chained ahead of Yahoo Finance (`yfinance`). Energy newswires carry desk-relevant signal — LNG cargoes, Norway/supply outages, EU storage, Henry Hub, geopolitics — at higher density than a generic finance feed. The default chain is:
+
+```python
+config["data_vendors"]["news_data"] = "rss_feeds,yfinance"   # default: RSS first, Yahoo fallback
+```
+
+The shipped feed list (`rss_news_feeds`) covers Natural Gas Intelligence, Gas Outlook, Offshore Energy, Oilprice, and Rigzone. Curate it for your desk — add operator/TSO/terminal feeds or paid wires, or drop ones you don't want:
+
+```python
+config["rss_news_feeds"] = [
+    {"name": "Gas Outlook",      "url": "https://gasoutlook.com/feed/",   "topics": ["europe", "lng"]},
+    {"name": "My Operator Feed", "url": "https://example.com/news/rss",   "topics": ["outages"]},
+]
+```
+
+To go back to Yahoo only, set `config["data_vendors"]["news_data"] = "yfinance"`. Notes:
+
+- **Chain order is strict** — a vendor that returns anything ends the chain; there is no silent merge. RSS returns nothing only by *raising*, so `rss_feeds,yfinance` correctly falls through to Yahoo when no feed has an in-window article.
+- **Live-oriented.** RSS exposes only the latest items with no point-in-time query, so for a pinned historical/backtest date the chain falls through to Yahoo (which can query a past window). Look-ahead filtering (future-dated / undated-in-backtest articles excluded) is shared with the Yahoo path.
+- **Resilient.** A feed that errors is logged and skipped, never aborting the batch. Each news call fetches the feeds, so latency scales with the feed count.
+
 ## Persistence and Recovery
 
-TradingAgents persists two kinds of state across runs.
+GasTradingAgents persists two kinds of state across runs.
 
 ### Decision log
 
-The decision log is always on. Each completed run appends its decision to `~/.tradingagents/memory/trading_memory.md`. On the next run for the same ticker, TradingAgents fetches the realised return (raw and alpha vs SPY), generates a one-paragraph reflection, and injects the most recent same-ticker decisions plus recent cross-ticker lessons into the Portfolio Manager prompt, so each analysis carries forward what worked and what didn't.
+The decision log is always on. Each completed run appends its decision to `~/.tradingagents/memory/trading_memory.md`. On the next run for the same ticker, GasTradingAgents fetches the realised return (raw and alpha vs the contract's spread leg — Henry Hub `NG=F` when trading TTF, Dutch TTF `TTF=F` when trading Henry Hub), generates a one-paragraph reflection, and injects the most recent same-ticker decisions plus recent cross-ticker lessons into the Portfolio Manager prompt, so each analysis carries forward what worked and what didn't.
 
 Override the path with `TRADINGAGENTS_MEMORY_LOG_PATH`.
 
@@ -265,16 +250,16 @@ tradingagents analyze --clear-checkpoints    # reset before running
 config = DEFAULT_CONFIG.copy()
 config["checkpoint_enabled"] = True
 ta = TradingAgentsGraph(config=config)
-_, decision = ta.propagate("NVDA", "2026-01-15")
+_, decision = ta.propagate("TTF=F", "2026-01-15")
 ```
 
 ## Reproducibility
 
-TradingAgents is LLM-driven, so two runs of the same ticker and date can differ. This is expected for a research tool built on language models, not a defect. The variation comes from a few distinct sources, and it helps to separate them.
+GasTradingAgents is LLM-driven, so two runs of the same ticker and date can differ. This is expected for a research tool built on language models, not a defect. The variation comes from a few distinct sources, and it helps to separate them.
 
 Language model sampling is non-deterministic. Even at a fixed temperature, providers do not guarantee byte-identical output across calls, and reasoning models (the default GPT-5.x family, and any thinking-mode model) vary the most because their internal reasoning is itself sampled.
 
-Live data moves. News, StockTwits, and Reddit return different content as time passes, so a run today sees different inputs than a run last week even for the same historical trade date. Pin the analysis date to hold the price and indicator window fixed, but the social and news sources still reflect "now".
+Live data moves. Energy news returns different content as time passes, so a run today sees different inputs than a run last week even for the same historical trade date. Pin the analysis date to hold the price and indicator window fixed, but the news sources still reflect "now".
 
 To reduce variation you can lower the sampling temperature. Set `temperature` in your config (or `TRADINGAGENTS_TEMPERATURE` in `.env`); lower values make models that honor it more repeatable. The current curated models are reasoning-first and largely ignore temperature, so for tighter reproducibility use a non-reasoning model, which you can set explicitly via the Custom model ID option.
 
@@ -286,17 +271,19 @@ config["temperature"] = 0.0
 # non-reasoning deep/quick model explicitly (e.g. via the Custom model ID option).
 ```
 
-What does not vary anymore: the analyzed company identity is resolved deterministically from the ticker before any agent runs, and the market analyst grounds exact price and indicator claims in a verified data snapshot. Earlier reports of "different companies" or fabricated price levels across runs are addressed by these two mechanisms.
+What does not vary anymore: the analyzed instrument identity is resolved deterministically from the ticker before any agent runs, and the market analyst grounds exact price and indicator claims in a verified data snapshot. Earlier reports of "different companies" or fabricated price levels across runs are addressed by these two mechanisms.
 
 Backtest results are not guaranteed to match any published figure. Returns depend on the model, the temperature, the date range, data quality, and the sampling above. Treat the framework as a research scaffold for studying multi-agent analysis, not as a strategy with a fixed, replicable return.
 
 ## Contributing
 
-Contributions are welcome: bug fixes, documentation, and feature ideas; past contributions are credited per release in [`CHANGELOG.md`](CHANGELOG.md).
+Contributions are welcome: bug fixes, documentation, and feature ideas.
 
-## Citation
+## Acknowledgements
 
-Please reference our work if you find *TradingAgents* provides you with some help :)
+GasTradingAgents is based on [TradingAgents](https://github.com/TauricResearch/TradingAgents) by [Tauric Research](https://github.com/TauricResearch). The multi-agent topology — analyst team, bullish/bearish researcher debates, trader, risk management, and portfolio manager — and the LangGraph orchestration are inherited from that work and adapted to a natural-gas trading desk (TTF / Henry Hub, gas supply/demand fundamentals, and energy-news positioning).
+
+If GasTradingAgents is useful to you, please cite the original TradingAgents paper:
 
 ```
 @misc{xiao2025tradingagentsmultiagentsllmfinancial,

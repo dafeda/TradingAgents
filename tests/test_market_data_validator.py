@@ -1,4 +1,4 @@
-"""Tests for the deterministic market-data verification snapshot (#830/#881)."""
+"""Tests for the deterministic market-data verification snapshot."""
 
 from __future__ import annotations
 

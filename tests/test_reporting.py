@@ -1,5 +1,5 @@
 """Report parity: the shared writer produces the report tree for the CLI and the
-programmatic API alike (#1037)."""
+programmatic API alike."""
 
 from types import SimpleNamespace
 

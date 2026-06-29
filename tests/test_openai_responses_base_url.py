@@ -1,5 +1,5 @@
 """The Responses API only exists on native OpenAI; a custom base_url on the
-openai provider must fall back to Chat Completions (#1024)."""
+openai provider must fall back to Chat Completions."""
 
 from __future__ import annotations
 

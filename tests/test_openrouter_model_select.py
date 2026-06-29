@@ -1,6 +1,5 @@
-"""OpenRouter model selection: prompts are labeled by mode (#1000); required
-prompts exit cleanly on cancel; the output-language prompt defaults to English
-on cancel; and the OpenRouter list is newest-first."""
+"""OpenRouter model selection: prompts are labeled by mode; required
+prompts exit cleanly on cancel; and the OpenRouter list is newest-first."""
 
 from unittest import mock
 
@@ -108,15 +107,3 @@ class TestCancelExitsCleanly:
         with mock.patch.object(utils.questionary, "text", return_value=_asks(None)), \
              pytest.raises(SystemExit):
             utils._prompt_custom_model_id()
-
-
-@pytest.mark.unit
-class TestLanguageDefaultsToEnglish:
-    def test_select_cancel_defaults_english(self):
-        with mock.patch.object(utils.questionary, "select", return_value=_asks(None)):
-            assert utils.ask_output_language() == "English"
-
-    def test_custom_language_cancel_defaults_english(self):
-        with mock.patch.object(utils.questionary, "select", return_value=_asks("custom")), \
-             mock.patch.object(utils.questionary, "text", return_value=_asks(None)):
-            assert utils.ask_output_language() == "English"

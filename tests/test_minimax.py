@@ -27,14 +27,14 @@ def _client(model: str = "MiniMax-M2.7"):
 class TestMinimaxReasoningSplit:
     def test_reasoning_split_sent_via_extra_body_not_top_level(self):
         # Must be in extra_body, not top-level: the openai SDK validates
-        # top-level params and rejects unknown ones like reasoning_split (#826).
+        # top-level params and rejects unknown ones like reasoning_split.
         payload = _client()._get_request_payload([HumanMessage(content="hi")])
         assert payload.get("extra_body", {}).get("reasoning_split") is True
         assert "reasoning_split" not in payload  # never top-level
 
     def test_non_reasoning_minimax_does_not_inject_reasoning_split(self):
         """Coding Plan / MiniMax-Text-01 / any non-M2-prefixed model must NOT
-        receive reasoning_split at all (top-level or extra_body) (#826)."""
+        receive reasoning_split at all (top-level or extra_body)."""
         for model in ("minimax-text-01", "MiniMax-Coding-Plan"):
             payload = _client(model)._get_request_payload(
                 [HumanMessage(content="hi")]

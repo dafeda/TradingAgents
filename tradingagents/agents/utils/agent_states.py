@@ -11,10 +11,10 @@ class InvestDebateState(TypedDict):
     ]  # Bullish Conversation history
     bear_history: Annotated[
         str, "Bearish Conversation history"
-    ]  # Bullish Conversation history
+    ]  # Bearish Conversation history
     history: Annotated[str, "Conversation history"]  # Conversation history
-    current_response: Annotated[str, "Latest response"]  # Last response
-    judge_decision: Annotated[str, "Final judge decision"]  # Last response
+    current_response: Annotated[str, "Latest response"]
+    judge_decision: Annotated[str, "Final judge decision"]
     count: Annotated[int, "Length of the current conversation"]  # Conversation length
 
 
@@ -45,8 +45,7 @@ class RiskDebateState(TypedDict):
 
 
 class AgentState(MessagesState):
-    company_of_interest: Annotated[str, "Company that we are interested in trading"]
-    asset_type: Annotated[str, "Asset type under analysis such as stock or crypto"]
+    company_of_interest: Annotated[str, "Gas contract we are interested in trading (TTF=F or NG=F)"]
     instrument_context: Annotated[str, "Deterministic ticker identity resolved at run start"]
     trade_date: Annotated[str, "What date we are trading at"]
 

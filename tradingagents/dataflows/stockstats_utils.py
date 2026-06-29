@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # A vendor's latest OHLCV row this many calendar days before the requested date
 # is treated as stale. Generous enough to span long holiday weekends, tight
-# enough to catch the year-old frames yfinance occasionally returns (#1021).
+# enough to catch the year-old frames yfinance occasionally returns.
 MAX_OHLCV_STALE_DAYS = 10
 
 
@@ -55,7 +55,7 @@ def _ensure_date_column(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def _clean_dataframe(data: pd.DataFrame) -> pd.DataFrame:
-    """Normalize a stock DataFrame for stockstats: parse dates, drop invalid rows, fill price gaps."""
+    """Normalize a price DataFrame for stockstats: parse dates, drop invalid rows, fill price gaps."""
     data = _ensure_date_column(data)
     data["Date"] = pd.to_datetime(data["Date"], errors="coerce")
     data = data.dropna(subset=["Date"])
@@ -143,7 +143,7 @@ def load_ohlcv(symbol: str, curr_date: str) -> pd.DataFrame:
     start_date = today_date - pd.DateOffset(years=5)
     start_str = start_date.strftime("%Y-%m-%d")
     # yfinance ``end`` is EXCLUSIVE; request tomorrow so today's row is included
-    # when curr_date is the current day (#986). Look-ahead is still prevented by
+    # when curr_date is the current day. Look-ahead is still prevented by
     # the curr_date filter below.
     end_str = (today_date + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
 
@@ -186,7 +186,7 @@ def load_ohlcv(symbol: str, curr_date: str) -> pd.DataFrame:
     data = data[data["Date"] <= curr_date_dt]
 
     # Reject a stale frame (latest row far older than curr_date) rather than
-    # feeding year-old prices into indicators (#1021).
+    # feeding year-old prices into indicators.
     _assert_ohlcv_not_stale(data, curr_date, symbol, canonical)
 
     return data
@@ -209,12 +209,12 @@ def filter_financials_by_date(data: pd.DataFrame, curr_date: str) -> pd.DataFram
 class StockstatsUtils:
     @staticmethod
     def get_stock_stats(
-        symbol: Annotated[str, "ticker symbol for the company"],
+        symbol: Annotated[str, "gas contract symbol, e.g. TTF=F or NG=F"],
         indicator: Annotated[
-            str, "quantitative indicators based off of the stock data for the company"
+            str, "quantitative indicators based off of the contract's price data"
         ],
         curr_date: Annotated[
-            str, "curr date for retrieving stock price data, YYYY-mm-dd"
+            str, "curr date for retrieving price data, YYYY-mm-dd"
         ],
     ):
         data = load_ohlcv(symbol, curr_date)

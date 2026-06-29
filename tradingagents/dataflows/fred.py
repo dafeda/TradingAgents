@@ -1,8 +1,10 @@
 """FRED (Federal Reserve Economic Data) macro vendor.
 
-Fetches macroeconomic time series — policy rates, Treasury yields, inflation,
-labor, growth — from the St. Louis Fed's free API. Used by the news analyst to
-ground macro commentary in actual numbers rather than headlines alone.
+Fetches macroeconomic time series for the gas desk's backdrop — euro-area policy
+(ECB rates, HICP, EUR/USD) plus the globally-relevant US series that drive the
+dollar and LNG arbitrage (Fed funds, Treasury yields, USD index) — from the St.
+Louis Fed's free API. Used by the news analyst to ground macro commentary in
+actual numbers rather than headlines alone.
 
 A free API key (https://fred.stlouisfed.org/docs/api/api_key.html) is read from
 ``FRED_API_KEY``; if it is unset the vendor raises ``FredNotConfiguredError`` so
@@ -20,8 +22,7 @@ logger = logging.getLogger(__name__)
 
 FRED_API_BASE = "https://api.stlouisfed.org/fred"
 
-# Network timeout (seconds) so a stalled request can't hang the agents,
-# mirroring the Alpha Vantage client.
+# Network timeout (seconds) so a stalled request can't hang the agents.
 REQUEST_TIMEOUT = 30
 
 # Default trailing window when the caller does not specify one. A year captures
@@ -29,13 +30,23 @@ REQUEST_TIMEOUT = 30
 DEFAULT_LOOKBACK_DAYS = 365
 
 # Rows cap for the rendered table: recent values matter most for a decision, and
-# daily series (yields, VIX) over a long window would otherwise flood context.
+# daily series (yields, FX) over a long window would otherwise flood context.
 MAX_ROWS = 40
 
-# Curated human-friendly aliases -> FRED series IDs. Anything not listed is used
-# verbatim as a raw FRED series ID, so power users are never limited to this set.
+# Curated human-friendly aliases -> FRED series IDs. Euro-area series come first
+# (the gas desk's core macro), then the globally-relevant US series that drive
+# the dollar and LNG arbitrage. Anything not listed is used verbatim as a raw
+# FRED series ID, so power users are never limited to this set.
 MACRO_SERIES = {
-    # Policy rate & Treasury yields
+    # Euro-area (gas desk core): ECB policy, EUR/USD, euro-area inflation
+    "ecb_rate": "ECBDFR",                 # ECB deposit facility rate
+    "ecb_deposit_rate": "ECBDFR",
+    "ecb_main_refi": "ECBMRRFR",          # ECB main refinancing rate
+    "eurusd": "DEXUSEU",                  # USD per 1 EUR
+    "eur_usd": "DEXUSEU",
+    "eu_inflation": "CP0000EZ19M086NEST", # euro-area HICP
+    "euro_inflation": "CP0000EZ19M086NEST",
+    # US policy rate & Treasury yields (global risk / USD / LNG arbitrage)
     "fed_funds_rate": "FEDFUNDS",
     "federal_funds_rate": "FEDFUNDS",
     "fed_funds": "FEDFUNDS",
@@ -44,31 +55,19 @@ MACRO_SERIES = {
     "30y_treasury": "DGS30",
     "10y_2y_spread": "T10Y2Y",
     "yield_curve": "T10Y2Y",
-    # Inflation
+    # Inflation (global context)
     "cpi": "CPIAUCSL",
     "core_cpi": "CPILFESL",
     "pce": "PCEPI",
     "core_pce": "PCEPILFE",
     "inflation_expectations": "T10YIE",
-    # Growth & output
+    # Growth & labor (global demand context)
     "real_gdp": "GDPC1",
     "gdp": "GDP",
-    "industrial_production": "INDPRO",
-    # Labor
     "unemployment_rate": "UNRATE",
     "unemployment": "UNRATE",
-    "nonfarm_payrolls": "PAYEMS",
-    "payrolls": "PAYEMS",
-    "initial_claims": "ICSA",
-    # Money & markets
-    "m2": "M2SL",
-    "money_supply": "M2SL",
-    "vix": "VIXCLS",
+    # USD strength (drives LNG arbitrage / commodity pricing)
     "dollar_index": "DTWEXBGS",
-    # Sentiment & housing
-    "consumer_sentiment": "UMCSENT",
-    "housing_starts": "HOUST",
-    "retail_sales": "RSAFS",
 }
 
 
@@ -109,8 +108,8 @@ def _resolve_series_id(indicator: str) -> str:
     if not candidate or len(candidate) > 30 or any(c.isspace() for c in candidate):
         raise ValueError(
             f"'{indicator}' is not a known macro alias or a valid FRED series ID. "
-            f"Use an alias (e.g. 'cpi', 'unemployment', '10y_treasury') or a raw "
-            f"FRED series ID (e.g. 'CPIAUCSL')."
+            f"Use an alias (e.g. 'ecb_rate', 'eurusd', 'eu_inflation', '10y_treasury') "
+            f"or a raw FRED series ID (e.g. 'ECBDFR')."
         )
     return candidate
 

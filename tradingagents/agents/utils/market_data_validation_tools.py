@@ -7,7 +7,7 @@ from tradingagents.dataflows.market_data_validator import build_verified_market_
 
 @tool
 def get_verified_market_snapshot(
-    symbol: Annotated[str, "ticker symbol of the company"],
+    symbol: Annotated[str, "gas contract symbol, e.g. TTF=F or NG=F"],
     curr_date: Annotated[str, "the current trading date, YYYY-mm-dd"],
     look_back_days: Annotated[
         int, "number of recent trading rows to include for sanity-checking"

@@ -1,30 +1,19 @@
 import logging
 
-from .alpha_vantage import (
-    get_balance_sheet as get_alpha_vantage_balance_sheet,
-    get_cashflow as get_alpha_vantage_cashflow,
-    get_fundamentals as get_alpha_vantage_fundamentals,
-    get_global_news as get_alpha_vantage_global_news,
-    get_income_statement as get_alpha_vantage_income_statement,
-    get_indicator as get_alpha_vantage_indicator,
-    get_insider_transactions as get_alpha_vantage_insider_transactions,
-    get_news as get_alpha_vantage_news,
-    get_stock as get_alpha_vantage_stock,
-)
 from .config import get_config
+from .entsog import get_pipeline_flows as get_entsog_pipeline_flows
 from .errors import (
     NoMarketDataError,
     VendorNotConfiguredError,
     VendorRateLimitError,
 )
+from .eua import get_eua_carbon as get_yfinance_eua_carbon
 from .fred import get_macro_data as get_fred_macro_data
+from .gie import get_gas_storage as get_gie_gas_storage
 from .polymarket import get_prediction_markets as get_polymarket_prediction_markets
+from .rss_news import get_global_news_rss_feeds, get_news_rss_feeds
+from .weather import get_weather_degree_days as get_open_meteo_weather
 from .y_finance import (
-    get_balance_sheet as get_yfinance_balance_sheet,
-    get_cashflow as get_yfinance_cashflow,
-    get_fundamentals as get_yfinance_fundamentals,
-    get_income_statement as get_yfinance_income_statement,
-    get_insider_transactions as get_yfinance_insider_transactions,
     get_stock_stats_indicators_window,
     get_YFin_data_online,
 )
@@ -35,7 +24,7 @@ logger = logging.getLogger(__name__)
 # Tools organized by category
 TOOLS_CATEGORIES = {
     "core_stock_apis": {
-        "description": "OHLCV stock price data",
+        "description": "OHLCV gas-contract price data",
         "tools": [
             "get_stock_data"
         ]
@@ -46,27 +35,41 @@ TOOLS_CATEGORIES = {
             "get_indicators"
         ]
     },
-    "fundamental_data": {
-        "description": "Company fundamentals",
-        "tools": [
-            "get_fundamentals",
-            "get_balance_sheet",
-            "get_cashflow",
-            "get_income_statement"
-        ]
-    },
     "news_data": {
-        "description": "News and insider data",
+        "description": "News data",
         "tools": [
             "get_news",
             "get_global_news",
-            "get_insider_transactions",
         ]
     },
     "macro_data": {
         "description": "Macroeconomic indicators (rates, inflation, labor, growth)",
         "tools": [
             "get_macro_indicators",
+        ]
+    },
+    "gas_storage": {
+        "description": "European gas-storage inventory (AGSI+ fill %, net withdrawal)",
+        "tools": [
+            "get_gas_storage",
+        ]
+    },
+    "weather_data": {
+        "description": "NW-Europe heating/cooling degree days (gas demand driver)",
+        "tools": [
+            "get_weather",
+        ]
+    },
+    "pipeline_flows": {
+        "description": "European gas entry flows (Norway pipe, LNG sendout)",
+        "tools": [
+            "get_pipeline_flows",
+        ]
+    },
+    "carbon_data": {
+        "description": "EUA carbon price for coal-gas switching",
+        "tools": [
+            "get_carbon_price",
         ]
     },
     "prediction_markets": {
@@ -79,9 +82,12 @@ TOOLS_CATEGORIES = {
 
 VENDOR_LIST = [
     "yfinance",
+    "rss_feeds",
     "fred",
+    "gie",
+    "open_meteo",
+    "entsog",
     "polymarket",
-    "alpha_vantage",
 ]
 
 # Optional enrichment categories. These add macro/event context to the news
@@ -89,53 +95,49 @@ VENDOR_LIST = [
 # sentinel instead of aborting the run (a bad LLM-supplied indicator, a missing
 # key, or a network blip should not crash an analysis over flavour data). Core
 # categories (prices, fundamentals, news) still raise so a broken primary is loud.
-OPTIONAL_CATEGORIES = {"macro_data", "prediction_markets"}
+OPTIONAL_CATEGORIES = {"macro_data", "prediction_markets", "gas_storage", "weather_data", "pipeline_flows", "carbon_data"}
 
 # Mapping of methods to their vendor-specific implementations
 VENDOR_METHODS = {
     # core_stock_apis
     "get_stock_data": {
-        "alpha_vantage": get_alpha_vantage_stock,
         "yfinance": get_YFin_data_online,
     },
     # technical_indicators
     "get_indicators": {
-        "alpha_vantage": get_alpha_vantage_indicator,
         "yfinance": get_stock_stats_indicators_window,
     },
-    # fundamental_data
-    "get_fundamentals": {
-        "alpha_vantage": get_alpha_vantage_fundamentals,
-        "yfinance": get_yfinance_fundamentals,
-    },
-    "get_balance_sheet": {
-        "alpha_vantage": get_alpha_vantage_balance_sheet,
-        "yfinance": get_yfinance_balance_sheet,
-    },
-    "get_cashflow": {
-        "alpha_vantage": get_alpha_vantage_cashflow,
-        "yfinance": get_yfinance_cashflow,
-    },
-    "get_income_statement": {
-        "alpha_vantage": get_alpha_vantage_income_statement,
-        "yfinance": get_yfinance_income_statement,
-    },
     # news_data
+    # Default config chains "rss_feeds,yfinance" (see DEFAULT_CONFIG): curated
+    # energy wires first, Yahoo as the fallback that can serve historical windows.
+    # Dict order below only governs the unconfigured "default" sentinel.
     "get_news": {
-        "alpha_vantage": get_alpha_vantage_news,
+        "rss_feeds": get_news_rss_feeds,
         "yfinance": get_news_yfinance,
     },
     "get_global_news": {
+        "rss_feeds": get_global_news_rss_feeds,
         "yfinance": get_global_news_yfinance,
-        "alpha_vantage": get_alpha_vantage_global_news,
-    },
-    "get_insider_transactions": {
-        "alpha_vantage": get_alpha_vantage_insider_transactions,
-        "yfinance": get_yfinance_insider_transactions,
     },
     # macro_data
     "get_macro_indicators": {
         "fred": get_fred_macro_data,
+    },
+    # gas_storage
+    "get_gas_storage": {
+        "gie": get_gie_gas_storage,
+    },
+    # weather_data
+    "get_weather": {
+        "open_meteo": get_open_meteo_weather,
+    },
+    # pipeline_flows
+    "get_pipeline_flows": {
+        "entsog": get_entsog_pipeline_flows,
+    },
+    # carbon_data
+    "get_carbon_price": {
+        "yfinance": get_yfinance_eua_carbon,
     },
     # prediction_markets
     "get_prediction_markets": {
@@ -177,9 +179,9 @@ def route_to_vendor(method: str, *args, **kwargs):
     all_available_vendors = list(VENDOR_METHODS[method].keys())
 
     # The configured vendor list IS the chain: we do NOT silently fall back to
-    # vendors the user did not choose (#988/#289) — that returned data from an
+    # vendors the user did not choose — that returned data from an
     # unexpected source and caused cross-vendor inconsistencies. For multi-vendor
-    # fallback, list them in order, e.g. data_vendors="yfinance,alpha_vantage".
+    # fallback, list them in order, e.g. data_vendors="yfinance,other".
     # The "default" sentinel (no explicit config) uses all available vendors.
     explicit = [v for v in primary_vendors if v and v != "default"]
     if explicit:
@@ -214,7 +216,7 @@ def route_to_vendor(method: str, *args, **kwargs):
         except Exception as e:
             # Don't let one vendor's failure crash the call when another can
             # serve it, but never swallow silently: a broken primary must be
-            # visible in the logs (#989), not hidden behind a fallback's verdict.
+            # visible in the logs, not hidden behind a fallback's verdict.
             logger.warning("Vendor %r failed for %s: %s", vendor, method, e)
             if first_error is None:
                 first_error = e

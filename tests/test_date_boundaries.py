@@ -33,7 +33,7 @@ def test_get_yfin_requests_inclusive_end(monkeypatch):
     monkeypatch.setattr(yfin.yf, "Ticker", FakeTicker)
     out = yfin.get_YFin_data_online("AAPL", "2025-05-01", "2025-05-09")
 
-    # end is requested one day past end_date so 2025-05-09 is included (#987).
+    # end is requested one day past end_date so 2025-05-09 is included.
     assert captured["end"] == "2025-05-10"
     # Header still reflects the requested range, not the internal +1 day.
     assert "to 2025-05-09" in out
@@ -58,4 +58,4 @@ def test_load_ohlcv_requests_inclusive_end(monkeypatch, tmp_path):
     su.load_ohlcv("AAPL", today)
 
     expected_end = (pd.Timestamp.today() + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-    assert captured["end"] == expected_end  # tomorrow -> today's row included (#986)
+    assert captured["end"] == expected_end  # tomorrow -> today's row included

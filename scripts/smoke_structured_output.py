@@ -42,23 +42,24 @@ PROVIDER_DEFAULTS = {
 
 # Minimal but realistic state for the three agents.
 DEBATE_HISTORY = """
-Bull Analyst: NVDA's data-center revenue grew 60% YoY last quarter, driven by
-Blackwell ramp; sovereign AI deals with multiple governments add a $40B+
-multi-year tailwind. Margins remain above peer average.
+Bull Analyst: TTF storage is tracking below the five-year seasonal norm into
+the withdrawal season, with a cold-spell forecast lifting heating demand.
+Norway maintenance and softer LNG sendout are tightening the balance, and a
+wider TTF–Henry Hub spread is pulling cargoes toward Europe.
 
-Bear Analyst: Concentration risk is real — top three customers are >40% of
-revenue. Any pause in hyperscaler capex would compress the multiple. China
-export restrictions still cap a meaningful portion of demand.
+Bear Analyst: Storage is still comfortable in absolute terms, mild weather
+could return, and strong LNG supply plus weak EUA carbon support cap the
+upside. Injection-season seasonality and curve roll argue for fading rallies.
 """
 
 
 def _make_rm_state():
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "investment_debate_state": {
             "history": DEBATE_HISTORY,
-            "bull_history": "Bull Analyst: NVDA's data-center revenue grew 60% YoY...",
-            "bear_history": "Bear Analyst: Concentration risk is real...",
+            "bull_history": "Bull Analyst: storage below the seasonal norm, cold-spell demand...",
+            "bear_history": "Bear Analyst: comfortable storage, strong LNG, weak carbon...",
             "current_response": "",
             "judge_decision": "",
             "count": 1,
@@ -68,14 +69,14 @@ def _make_rm_state():
 
 def _make_trader_state(investment_plan: str):
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "investment_plan": investment_plan,
     }
 
 
 def _make_pm_state(investment_plan: str, trader_plan: str):
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "past_context": "",
         "risk_debate_state": {
             "history": "Aggressive: lean in. Conservative: trim. Neutral: balanced sizing.",

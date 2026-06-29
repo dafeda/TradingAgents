@@ -3,16 +3,17 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from tradingagents.agents.utils.agent_utils import (
     get_indicators,
     get_instrument_context_from_state,
-    get_language_instruction,
     get_stock_data,
     get_verified_market_snapshot,
 )
+from tradingagents.instrument_profiles import get_profile
 
 
 def create_market_analyst(llm):
 
     def market_analyst_node(state):
         current_date = state["trade_date"]
+        ticker = state["company_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
 
         tools = [
@@ -20,6 +21,11 @@ def create_market_analyst(llm):
             get_indicators,
             get_verified_market_snapshot,
         ]
+
+        try:
+            gas_note = get_profile(ticker).market_note
+        except KeyError:
+            gas_note = ""
 
         system_message = (
             """You are a trading assistant tasked with analyzing financial markets. Your role is to select the **most relevant indicators** for a given market condition or trading strategy from the following list. The goal is to choose up to **8 indicators** that provide complementary insights without redundancy. Categories and each category's indicators are:
@@ -52,7 +58,7 @@ Before writing the final report, call get_verified_market_snapshot for this tick
 
 Write a very detailed and nuanced report of the trends you observe. Provide specific, actionable insights with supporting evidence to help traders make informed decisions."""
             + """ Make sure to append a Markdown table at the end of the report to organize key points in the report, organized and easy to read."""
-            + get_language_instruction()
+            + gas_note
         )
 
         prompt = ChatPromptTemplate.from_messages(

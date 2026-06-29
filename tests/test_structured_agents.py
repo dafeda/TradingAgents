@@ -70,7 +70,7 @@ class TestRenderTraderProposal:
 
 @pytest.mark.unit
 class TestNullishFloatCoercion:
-    """A weak LLM may write "None"/"N/A" into an optional float field (#1058);
+    """A weak LLM may write "None"/"N/A" into an optional float field;
     coerce those to None so the structured call validates instead of erroring."""
 
     def test_trader_nullish_strings_coerce_to_none(self):
@@ -129,7 +129,7 @@ class TestRenderResearchPlan:
 
 def _make_trader_state():
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "investment_plan": "**Recommendation**: Buy\n**Rationale**: ...\n**Strategic Actions**: ...",
     }
 
@@ -155,7 +155,7 @@ def _structured_trader_llm(captured: dict, proposal: TraderProposal | None = Non
 @pytest.mark.unit
 def test_invoke_structured_falls_back_when_result_is_none():
     # A thinking model can answer in plain text, leaving the parser with None.
-    # That must fall back to free text, not crash on render(None) (#1051).
+    # That must fall back to free text, not crash on render(None).
     from tradingagents.agents.utils.structured import invoke_structured_or_freetext
 
     structured = MagicMock()
@@ -220,7 +220,7 @@ class TestTraderAgent:
 
 def _make_rm_state():
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "investment_debate_state": {
             "history": "Bull and bear arguments here.",
             "bull_history": "Bull says...",
@@ -313,7 +313,7 @@ class TestRenderSentimentReport:
         assert "**Confidence:** Low" in render_sentiment_report(report)
 
     def test_narrative_preserved_in_output(self):
-        narrative = "## Breakdown\n\nStockTwits: 70% bullish.\n\n| Signal | Direction |\n|---|---|\n| News | Neutral |"
+        narrative = "## Breakdown\n\nEnergy news: storage below norm, cold snap.\n\n| Signal | Direction |\n|---|---|\n| News | Neutral |"
         report = SentimentReport(
             overall_band=SentimentBand.MILDLY_BULLISH,
             overall_score=6.0,
@@ -340,9 +340,8 @@ class TestRenderSentimentReport:
 
 def _make_sentiment_state():
     return {
-        "company_of_interest": "NVDA",
+        "company_of_interest": "TTF=F",
         "trade_date": "2026-01-15",
-        "asset_type": "stock",
         "messages": [],
     }
 
@@ -354,7 +353,7 @@ def _structured_sentiment_llm(captured: dict, report: SentimentReport | None = N
         report = SentimentReport(
             overall_band=SentimentBand.BULLISH, overall_score=7.5,
             confidence="high",
-            narrative="StockTwits 75% bullish. News constructive. Reddit upbeat.",
+            narrative="Storage below seasonal norm. Norway maintenance. EUA firm.",
         )
     structured = MagicMock()
     structured.invoke.side_effect = lambda prompt: (
@@ -389,7 +388,7 @@ class TestSentimentAnalystAgent:
     def test_prompt_contains_ticker(self):
         captured = {}
         create_sentiment_analyst(_structured_sentiment_llm(captured))(_make_sentiment_state())
-        assert any("NVDA" in str(m) for m in captured["prompt"])
+        assert any("TTF=F" in str(m) for m in captured["prompt"])
 
     def test_falls_back_to_freetext_when_structured_unavailable(self):
         plain = "**Overall Sentiment:** **Bearish** (Score: 3.0/10)\n**Confidence:** Low\n\nLimited data."

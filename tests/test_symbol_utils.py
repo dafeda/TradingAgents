@@ -21,27 +21,20 @@ class TestNormalizeSymbol(unittest.TestCase):
         self.assertEqual(normalize_symbol("aapl"), "AAPL")
         self.assertEqual(normalize_symbol("  msft  "), "MSFT")
 
-    def test_metal_aliases_map_to_futures(self):
-        self.assertEqual(normalize_symbol("XAUUSD"), "GC=F")
-        self.assertEqual(normalize_symbol("XAUUSD+"), "GC=F")   # broker CFD suffix
-        self.assertEqual(normalize_symbol("xauusd+"), "GC=F")
-        self.assertEqual(normalize_symbol("GOLD"), "GC=F")
-        self.assertEqual(normalize_symbol("XAGUSD"), "SI=F")
+    def test_gas_aliases_map_to_futures(self):
+        self.assertEqual(normalize_symbol("TTF"), "TTF=F")
+        self.assertEqual(normalize_symbol("TTF+"), "TTF=F")   # broker CFD suffix
+        self.assertEqual(normalize_symbol("ttf"), "TTF=F")
+        self.assertEqual(normalize_symbol("DUTCHTTF"), "TTF=F")
+        self.assertEqual(normalize_symbol("EUGAS"), "TTF=F")
+        self.assertEqual(normalize_symbol("NATGAS"), "NG=F")
+        self.assertEqual(normalize_symbol("XNGUSD"), "NG=F")
 
-    def test_energy_and_index_aliases(self):
-        self.assertEqual(normalize_symbol("USOIL"), "CL=F")
-        self.assertEqual(normalize_symbol("SPX500"), "^GSPC")
-        self.assertEqual(normalize_symbol("NAS100"), "^NDX")
-        self.assertEqual(normalize_symbol("US30"), "^DJI")
-
-    def test_forex_pairs_get_x_suffix(self):
-        self.assertEqual(normalize_symbol("EURUSD"), "EURUSD=X")
-        self.assertEqual(normalize_symbol("GBPJPY"), "GBPJPY=X")
-        self.assertEqual(normalize_symbol("eurusd"), "EURUSD=X")
-
-    def test_crypto_pairs_get_dash_usd(self):
-        self.assertEqual(normalize_symbol("BTCUSD"), "BTC-USD")
-        self.assertEqual(normalize_symbol("ETHUSD"), "ETH-USD")
+    def test_non_gas_symbols_pass_through(self):
+        # Forex/crypto/metals are no longer special-cased on this gas-only desk;
+        # unknown symbols pass through upper-cased.
+        for sym in ("EURUSD", "BTCUSD", "XAUUSD", "USOIL", "SPX500"):
+            self.assertEqual(normalize_symbol(sym), sym)
 
     def test_six_letter_non_currency_left_alone(self):
         # GOOGLE-style 6-letter tickers that aren't two currency codes
