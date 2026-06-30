@@ -35,6 +35,16 @@ class WeatherTests(unittest.TestCase):
         self.assertIn("real |", out)
         self.assertIn("fcst |", out)  # 06-28 is after curr_date
 
+    def test_us_centroid_labels_conus(self):
+        resp = mock.Mock(status_code=200)
+        resp.json.return_value = _DAILY
+        with mock.patch.object(weather.requests, "get", return_value=resp):
+            out = weather.get_us_weather_degree_days("2026-06-27", 14)
+        self.assertIn("CONUS weather degree-days", out)
+        # The CONUS centroid (~39°N 98°W) must be passed through, not the EU one.
+        self.assertIn("39.0N -98.0E", out)
+        self.assertNotIn("51.0N", out)
+
     def test_empty_payload(self):
         resp = mock.Mock(status_code=200)
         resp.json.return_value = {"daily": {}}

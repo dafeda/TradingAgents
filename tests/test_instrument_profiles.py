@@ -27,8 +27,9 @@ class InstrumentProfileTests(unittest.TestCase):
         self.assertEqual(p.display_name, "Henry Hub")
         self.assertEqual(p.currency_unit, "USD/MMBtu")
         self.assertEqual(p.region, "US")
-        # No US supply/demand vendors yet — fundamentals analyst is omitted.
-        self.assertFalse(p.fundamentals_available)
+        # US supply/demand vendors (EIA storage + Open-Meteo CONUS weather)
+        # are wired — fundamentals analyst runs for Henry Hub.
+        self.assertTrue(p.fundamentals_available)
 
     def test_symmetric_benchmark(self):
         # Each contract is the other's alpha benchmark (TTF–HH spread).

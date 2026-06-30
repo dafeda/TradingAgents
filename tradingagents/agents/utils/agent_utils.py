@@ -10,6 +10,8 @@ from tradingagents.agents.utils.gas_data_tools import (
     get_carbon_price,
     get_gas_storage,
     get_pipeline_flows,
+    get_us_gas_storage,
+    get_us_weather,
     get_weather,
 )
 from tradingagents.agents.utils.macro_data_tools import get_macro_indicators
@@ -33,6 +35,8 @@ __all__ = [
     "get_weather",
     "get_pipeline_flows",
     "get_carbon_price",
+    "get_us_gas_storage",
+    "get_us_weather",
     "get_prediction_markets",
     "get_verified_market_snapshot",
     "build_instrument_context",

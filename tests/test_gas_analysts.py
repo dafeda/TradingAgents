@@ -34,13 +34,26 @@ def _state():
 
 
 class FundamentalsToolsTests(unittest.TestCase):
-    def test_binds_supply_demand_tools(self):
+    def test_binds_eu_supply_demand_tools_for_ttf(self):
         llm = _CapturingLLM()
         create_fundamentals_analyst(llm)(_state())
         self.assertEqual(
             set(llm.bound),
             {"get_gas_storage", "get_weather", "get_pipeline_flows", "get_carbon_price"},
         )
+
+    def test_binds_us_supply_demand_tools_for_henry_hub(self):
+        # NG=F (Henry Hub) is US-region — the analyst must bind the US tool set
+        # (EIA storage + CONUS weather), NOT the EU tools.
+        llm = _CapturingLLM()
+        create_fundamentals_analyst(llm)({**_state(), "company_of_interest": "NG=F"})
+        self.assertEqual(
+            set(llm.bound),
+            {"get_us_gas_storage", "get_us_weather"},
+        )
+        # EU tools must not be bound for a US instrument.
+        self.assertFalse(set(llm.bound) & {"get_gas_storage", "get_weather",
+                                           "get_pipeline_flows", "get_carbon_price"})
 
 
 class MarketGasNoteTests(unittest.TestCase):

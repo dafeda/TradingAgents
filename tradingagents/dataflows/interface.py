@@ -1,6 +1,7 @@
 import logging
 
 from .config import get_config
+from .eia import get_us_gas_storage as get_eia_us_gas_storage
 from .entsog import get_pipeline_flows as get_entsog_pipeline_flows
 from .errors import (
     NoMarketDataError,
@@ -12,7 +13,10 @@ from .fred import get_macro_data as get_fred_macro_data
 from .gie import get_gas_storage as get_gie_gas_storage
 from .polymarket import get_prediction_markets as get_polymarket_prediction_markets
 from .rss_news import get_global_news_rss_feeds, get_news_rss_feeds
-from .weather import get_weather_degree_days as get_open_meteo_weather
+from .weather import (
+    get_us_weather_degree_days as get_open_meteo_us_weather,
+    get_weather_degree_days as get_open_meteo_weather,
+)
 from .y_finance import (
     get_stock_stats_indicators_window,
     get_YFin_data_online,
@@ -54,10 +58,22 @@ TOOLS_CATEGORIES = {
             "get_gas_storage",
         ]
     },
+    "us_gas_storage": {
+        "description": "US weekly gas-storage inventory (EIA Lower 48 Bcf, 5-yr avg)",
+        "tools": [
+            "get_us_gas_storage",
+        ]
+    },
     "weather_data": {
         "description": "NW-Europe heating/cooling degree days (gas demand driver)",
         "tools": [
             "get_weather",
+        ]
+    },
+    "us_weather_data": {
+        "description": "CONUS heating/cooling degree days (US gas demand driver)",
+        "tools": [
+            "get_us_weather",
         ]
     },
     "pipeline_flows": {
@@ -85,6 +101,7 @@ VENDOR_LIST = [
     "rss_feeds",
     "fred",
     "gie",
+    "eia",
     "open_meteo",
     "entsog",
     "polymarket",
@@ -95,7 +112,7 @@ VENDOR_LIST = [
 # sentinel instead of aborting the run (a bad LLM-supplied indicator, a missing
 # key, or a network blip should not crash an analysis over flavour data). Core
 # categories (prices, fundamentals, news) still raise so a broken primary is loud.
-OPTIONAL_CATEGORIES = {"macro_data", "prediction_markets", "gas_storage", "weather_data", "pipeline_flows", "carbon_data"}
+OPTIONAL_CATEGORIES = {"macro_data", "prediction_markets", "gas_storage", "us_gas_storage", "weather_data", "us_weather_data", "pipeline_flows", "carbon_data"}
 
 # Mapping of methods to their vendor-specific implementations
 VENDOR_METHODS = {
@@ -127,9 +144,17 @@ VENDOR_METHODS = {
     "get_gas_storage": {
         "gie": get_gie_gas_storage,
     },
+    # us_gas_storage
+    "get_us_gas_storage": {
+        "eia": get_eia_us_gas_storage,
+    },
     # weather_data
     "get_weather": {
         "open_meteo": get_open_meteo_weather,
+    },
+    # us_weather_data
+    "get_us_weather": {
+        "open_meteo": get_open_meteo_us_weather,
     },
     # pipeline_flows
     "get_pipeline_flows": {

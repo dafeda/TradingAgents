@@ -981,27 +981,6 @@ def run_analysis(checkpoint: bool | None = None):
     selected_set = {analyst.value for analyst in selections["analysts"]}
     selected_analyst_keys = [a for a in ANALYST_ORDER if a in selected_set]
 
-    # Henry Hub (NG=F) has no US supply/demand data vendors yet — silently drop
-    # the fundamentals analyst when trading it so the run doesn't stall on a
-    # node whose tools have no US coverage. A notice keeps the user informed.
-    # US vendors (EIA storage, US weather, US flows) are a follow-up phase;
-    # flipping the profile flag to True and removing this drop is the only
-    # wiring change required when they land.
-    try:
-        from tradingagents.instrument_profiles import get_profile
-
-        if "fundamentals" in selected_analyst_keys and not get_profile(
-            selections["ticker"]
-        ).fundamentals_available:
-            selected_analyst_keys = [a for a in selected_analyst_keys if a != "fundamentals"]
-            console.print(
-                f"[yellow]Note:[/yellow] Henry Hub ({selections['ticker']}) fundamentals "
-                "analyst unavailable — no US gas supply/demand vendors yet. "
-                "Running market/news/sentiment analysts only."
-            )
-    except KeyError:
-        pass  # Unknown ticker — leave the selection unchanged.
-
     analyst_execution_plan = build_analyst_execution_plan(selected_analyst_keys)
     analyst_wall_time_tracker = AnalystWallTimeTracker(analyst_execution_plan)
 

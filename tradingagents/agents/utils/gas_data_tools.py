@@ -1,9 +1,17 @@
-"""Gas supply/demand tools — European TTF fundamentals for the gas analyst.
+"""Gas supply/demand tools — fundamentals for the gas analyst.
 
-Thin LangChain wrappers over the gas vendors (AGSI+ storage, Open-Meteo
-degree-days, ENTSOG flows, EUA carbon), routed through the configured vendors
-so the fundamentals analyst reads the TTF supply/demand balance (storage,
-weather, flows, carbon) as the instrument's core fundamentals.
+Thin LangChain wrappers over the gas vendors, routed through the configured
+vendors so the fundamentals analyst reads the supply/demand balance as the
+instrument's core fundamentals. Two regional stacks are exposed:
+
+  * European TTF: AGSI+ storage, Open-Meteo NW-Europe degree-days, ENTSOG
+    flows, EUA carbon (coal-gas switching).
+  * US Henry Hub: EIA weekly storage, Open-Meteo CONUS degree-days. (No US
+    flows or carbon vendor yet — v1 covers the two biggest HH drivers.)
+
+The fundamentals analyst node binds the region-appropriate subset to the LLM
+(see ``fundamentals_analyst.py``); the ToolNode holds the union so either
+region's calls can execute.
 """
 from typing import Annotated
 
@@ -56,3 +64,27 @@ def get_carbon_price(
     over coal power (coal-gas switching), lifting gas demand. Returns OHLCV
     markdown; configured carbon_data vendor."""
     return route_to_vendor("get_carbon_price", curr_date, look_back_days)
+
+
+@tool
+def get_us_gas_storage(
+    curr_date: Annotated[str, "Current date in yyyy-mm-dd format; the end of the window"],
+    look_back_days: Annotated[int | None, "Trailing window in days; omit for ~180d"] = None,
+) -> str:
+    """US weekly gas-storage inventory from EIA: Lower 48 working gas (Bcf),
+    wk/wk change, 5-year same-week average and the vs-norm gap, plus a regional
+    breakdown. Storage vs the seasonal norm is the primary Henry Hub
+    fundamental (the Thursday EIA report). Returns a markdown report; configured
+    us_gas_storage vendor (needs EIA_API_KEY)."""
+    return route_to_vendor("get_us_gas_storage", curr_date, look_back_days)
+
+
+@tool
+def get_us_weather(
+    curr_date: Annotated[str, "Current date in yyyy-mm-dd format ('now' for the run)"],
+    look_back_days: Annotated[int | None, "Realised window in days; omit for 14d"] = None,
+) -> str:
+    """CONUS heating/cooling degree days (Open-Meteo): realised window plus a
+    7-day forecast tail. High HDD = strong gas heating demand. The dominant
+    short-term Henry Hub demand driver. Configured us_weather_data vendor."""
+    return route_to_vendor("get_us_weather", curr_date, look_back_days)

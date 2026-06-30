@@ -110,11 +110,12 @@ export MINIMAX_CN_API_KEY=...      # MiniMax — China (api.minimaxi.com)
 export OPENROUTER_API_KEY=...      # OpenRouter
 ```
 
-Gas data sources: **FRED** (euro-area macro) and **GIE AGSI+** (gas storage) need free keys; ENTSOG pipeline flows, Open-Meteo weather, Polymarket, and EUA carbon (via yfinance) are keyless.
+Gas data sources: **FRED** (euro-area macro), **GIE AGSI+** (EU gas storage), and **EIA** (US weekly gas storage) need free keys; ENTSOG pipeline flows, Open-Meteo weather (EU + US), Polymarket, and EUA carbon (via yfinance) are keyless.
 
 ```bash
 export FRED_API_KEY=...            # FRED macro data (https://fred.stlouisfed.org)
 export GIE_API_KEY=...             # GIE AGSI+ gas storage (https://agsi.gie.eu)
+export EIA_API_KEY=...             # EIA US gas storage (https://www.eia.gov/opendata)
 ```
 
 For Azure OpenAI, copy `.env.enterprise.example` to `.env.enterprise` and fill in your credentials.

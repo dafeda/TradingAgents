@@ -11,12 +11,11 @@ profile is **pure data** — no network, no dataflow imports — so it is safe
 to call from anywhere, including the instrument-identity anchor
 that runs once at graph start (``build_instrument_context``).
 
-Henry Hub has no US supply/demand data vendors yet (no EIA storage, US
-weather, or US pipeline/LNG flow vendor). Its profile therefore marks
-``fundamentals_available=False``; the CLI drops the fundamentals analyst
-when trading ``NG=F`` and surfaces a notice. US vendors are a follow-up
-phase — flipping that flag to ``True`` and stopping the CLI drop is the
-only wiring change required when they land.
+Henry Hub now has US supply/demand data vendors (EIA weekly storage + Open-Meteo
+CONUS degree-days). Its profile therefore marks ``fundamentals_available=True``
+and the fundamentals analyst runs for ``NG=F`` with the US tool set. (EIA LNG
+export / dry-gas production flows and a US carbon proxy are follow-up phases;
+flipping extra tool wiring in is the only change required when they land.)
 
 The TTF profile prose is moved verbatim from the agent prompts that
 previously hardcoded it; the NG=F prose is new, with the spread economics
@@ -41,7 +40,7 @@ class InstrumentProfile:
     currency_unit: str           # "EUR/MWh" / "USD/MMBtu"
     region: str                  # "EU" / "US"
     benchmark_ticker: str        # symmetric spread leg (NG=F / TTF=F)
-    fundamentals_available: bool # False for NG=F until US vendors land
+    fundamentals_available: bool # True for TTF=F and NG=F; False for instruments without a fundamentals vendor
 
     # Identity line appended after "The instrument to analyze is `<ticker>`,".
     context_description: str
@@ -49,7 +48,7 @@ class InstrumentProfile:
     # Per-analyst context prose (appended to each analyst's system message).
     market_note: str             # market analyst's instrument-specific note
     news_note: str               # news analyst's instrument-specific note
-    fundamentals_note: str       # fundamentals analyst's framing (NG=F: unused)
+    fundamentals_note: str       # fundamentals analyst's framing (region-specific tools)
 
     # Sentiment analyst: first paragraph (role + drivers). Formatted with
     # {ticker}, {start_date}, {end_date}; the news block + output fields are
@@ -118,20 +117,18 @@ _NG_F_PROFILE = InstrumentProfile(
     currency_unit="USD/MMBtu",
     region="US",
     benchmark_ticker="TTF=F",
-    fundamentals_available=False,
+    fundamentals_available=True,
     context_description="a gas contract priced in USD/MMBtu (Henry Hub)",
     market_note=(
-        "\n\nThis is Henry Hub natural gas (NG=F), priced in USD/MMBtu. Front-month futures carry strong seasonality (winter heating demand peak, summer injection/storage build) and roll effects — distinguish trend from roll. Compare against Dutch TTF (TTF=F) for the TTF–HH spread (global LNG arbitrage); a widening spread signals strong US LNG export pull draining domestic supply. Note: US storage/flow/weather fundamentals vendors are not yet wired, so lean on price action, the spread, and news flow for supply/demand context."
+        "\n\nThis is Henry Hub natural gas (NG=F), priced in USD/MMBtu. Front-month futures carry strong seasonality (winter heating demand peak, summer injection/storage build) and roll effects — distinguish trend from roll. Compare against Dutch TTF (TTF=F) for the TTF–HH spread (global LNG arbitrage); a widening spread signals strong US LNG export pull draining domestic supply."
     ),
     news_note=(
         " This is Henry Hub natural gas: prioritise US storage (EIA weekly), LNG export flows, US weather (heating/cooling demand), production (Appalachia/Haynesville), and geopolitics; use get_macro_indicators with 'fed_funds_rate', 'dollar_index', or '10y_treasury' for the US macro backdrop."
     ),
-    # Unused when fundamentals_available=False — the analyst is omitted for NG=F.
-    # Kept as a graceful string in case the node is ever invoked directly.
     fundamentals_note=(
-        "You are a US natural gas supply/demand analyst covering Henry Hub. Note: US "
-        "storage/flow/weather fundamentals vendors are not yet available; report what "
-        "can be inferred from price action, the TTF–HH spread, and news flow."
+        "You are a US natural gas supply/demand analyst covering Henry Hub. Write a comprehensive fundamentals report on the US gas balance and price drivers to inform traders. Build the supply/demand picture: storage fill vs the 5-year seasonal norm, heating/cooling demand, and (from news) production and LNG export pull."
+        " Use the tools: `get_us_gas_storage` (EIA weekly Lower 48 working gas in Bcf, wk/wk change, 5-yr same-week average — the key fundamental; storage above the 5-yr norm = loose balance, below = tight) and `get_us_weather` (CONUS HDD/CDD; high HDD = strong heating demand pulling gas out of storage). State whether the US balance is tight or loose and the directional read for Henry Hub, with supporting numbers."
+        " Append a Markdown table summarizing each driver (storage, weather), its level vs normal, and its bullish/bearish tilt."
     ),
     sentiment_framing=(
         "You are a US energy market positioning analyst. Produce a sentiment report for {ticker} (Henry Hub natural gas) covering {start_date} to {end_date}. There is no retail cashtag feed for gas, so read positioning from energy news flow: EIA storage surprises, LNG export terminal status, US weather scares, production outages, pipeline maintenance, and regulatory/geopolitical signals."
@@ -160,7 +157,7 @@ _NG_F_PROFILE = InstrumentProfile(
         "- Engagement: Present your argument in a conversational style, directly engaging with the bull analyst's points and debating effectively rather than simply listing facts."
     ),
     trader_inputs_desc=(
-        "the TTF–Henry Hub spread, energy positioning, and market/technical context (US supply/demand fundamentals unavailable for Henry Hub in this phase)"
+        "supply/demand fundamentals (EIA storage, US weather), the TTF–Henry Hub spread, and energy positioning"
     ),
 )
 

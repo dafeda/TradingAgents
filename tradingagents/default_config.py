@@ -165,7 +165,9 @@ DEFAULT_CONFIG = _apply_env_overrides({
         "news_data": "rss_feeds,yfinance",   # RSS energy wires first, Yahoo fallback. Options: rss_feeds, yfinance (see rss_news_feeds)
         "macro_data": "fred",                # Options: fred (needs FRED_API_KEY)
         "gas_storage": "gie",                # Options: gie (needs GIE_API_KEY)
+        "us_gas_storage": "eia",              # Options: eia (needs EIA_API_KEY) — Henry Hub
         "weather_data": "open_meteo",        # Options: open_meteo (keyless)
+        "us_weather_data": "open_meteo",      # Options: open_meteo (keyless) — Henry Hub
         "pipeline_flows": "entsog",          # Options: entsog (keyless)
         "carbon_data": "yfinance",           # EUA carbon proxy via yfinance
         "prediction_markets": "polymarket",  # Options: polymarket (keyless)

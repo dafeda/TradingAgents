@@ -22,6 +22,8 @@ from tradingagents.agents.utils.agent_utils import (
     get_pipeline_flows,
     get_prediction_markets,
     get_stock_data,
+    get_us_gas_storage,
+    get_us_weather,
     get_verified_market_snapshot,
     get_weather,
 )
@@ -188,11 +190,17 @@ class TradingAgentsGraph:
             ),
             "fundamentals": ToolNode(
                 [
-                    # Gas supply/demand tools (repurposed "fundamentals" analyst)
+                    # Gas supply/demand tools. The fundamentals node binds only
+                    # the region-appropriate subset to the LLM (EU for TTF=F,
+                    # US for NG=F) — see fundamentals_analyst._EU_TOOLS /
+                    # _US_TOOLS. The ToolNode holds the union so either
+                    # region's calls can execute; uncalled tools never run.
                     get_gas_storage,
                     get_weather,
                     get_pipeline_flows,
                     get_carbon_price,
+                    get_us_gas_storage,
+                    get_us_weather,
                 ]
             ),
         }
