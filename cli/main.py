@@ -977,7 +977,7 @@ def run_analysis(checkpoint: bool | None = None):
     # Create stats callback handler for tracking LLM/tool calls
     stats_handler = StatsCallbackHandler()
 
-    # Normalize analyst selection to predefined order (selection is a 'set', order is fixed)
+    # Keep only the analysts that were selected by the user, in the order defined by ANALYST_ORDER
     selected_set = {analyst.value for analyst in selections["analysts"]}
     selected_analyst_keys = [a for a in ANALYST_ORDER if a in selected_set]
 
