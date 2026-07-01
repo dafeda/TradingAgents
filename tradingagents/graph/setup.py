@@ -23,7 +23,7 @@ from tradingagents.agents import (
 from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.analyst_type import AnalystType
 
-from .analyst_execution import build_analyst_execution_plan
+from .analyst_execution import build_analyst_execution_plan, get_initial_analyst_node
 from .conditional_logic import ConditionalLogic
 
 
@@ -98,7 +98,7 @@ class GraphSetup:
 
         # Define edges
         # Start with the first analyst
-        workflow.add_edge(START, plan.specs[0].agent_node)
+        workflow.add_edge(START, get_initial_analyst_node(plan))
 
         # Connect analysts in sequence
         for i, spec in enumerate(plan.specs):
