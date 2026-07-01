@@ -79,8 +79,6 @@ class AnalystWallTimeTracker:
         self._wall_times: dict[str, float] = {}
 
     def mark_started(self, analyst_key: str, started_at: float | None = None) -> None:
-        if analyst_key not in ANALYST_NODE_SPECS:
-            raise ValueError(f"unknown analyst key: {analyst_key}")
         self._started_at.setdefault(analyst_key, monotonic() if started_at is None else started_at)
 
     def mark_completed(
@@ -88,8 +86,6 @@ class AnalystWallTimeTracker:
         analyst_key: str,
         completed_at: float | None = None,
     ) -> None:
-        if analyst_key not in ANALYST_NODE_SPECS:
-            raise ValueError(f"unknown analyst key: {analyst_key}")
         if analyst_key in self._wall_times:
             return
         started_at = self._started_at.get(analyst_key)
