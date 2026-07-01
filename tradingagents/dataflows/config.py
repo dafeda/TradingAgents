@@ -35,7 +35,3 @@ def get_config() -> dict:
     if _config is None:
         initialize_config()
     return deepcopy(_config)
-
-
-# Initialize with default config
-initialize_config()
