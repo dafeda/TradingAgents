@@ -21,6 +21,7 @@ from tradingagents.agents import (
     create_trader,
 )
 from tradingagents.agents.utils.agent_states import AgentState
+from tradingagents.analyst_type import AnalystType
 
 from .analyst_execution import build_analyst_execution_plan
 from .conditional_logic import ConditionalLogic
@@ -43,24 +44,25 @@ class GraphSetup:
         self.conditional_logic = conditional_logic
 
     def setup_graph(
-        self, selected_analysts=("market", "social", "news", "fundamentals")
+        self,
+        selected_analysts=(AnalystType.MARKET, AnalystType.SOCIAL, AnalystType.NEWS, AnalystType.FUNDAMENTALS),
     ):
         """Set up and compile the agent workflow graph.
 
         Args:
             selected_analysts (list): List of analyst types to include. Options are:
-                - "market": Market analyst
-                - "social": Sentiment analyst (energy-news positioning)
-                - "news": News analyst
-                - "fundamentals": Fundamentals analyst (gas supply/demand)
+                - AnalystType.MARKET: Market analyst
+                - AnalystType.SOCIAL: Sentiment analyst (energy-news positioning)
+                - AnalystType.NEWS: News analyst
+                - AnalystType.FUNDAMENTALS: Fundamentals analyst (gas supply/demand)
         """
         plan = build_analyst_execution_plan(selected_analysts)
 
         analyst_factories = {
-            "market": lambda: create_market_analyst(self.quick_thinking_llm),
-            "social": lambda: create_sentiment_analyst(self.quick_thinking_llm),
-            "news": lambda: create_news_analyst(self.quick_thinking_llm),
-            "fundamentals": lambda: create_fundamentals_analyst(self.quick_thinking_llm),
+            AnalystType.MARKET: lambda: create_market_analyst(self.quick_thinking_llm),
+            AnalystType.SOCIAL: lambda: create_sentiment_analyst(self.quick_thinking_llm),
+            AnalystType.NEWS: lambda: create_news_analyst(self.quick_thinking_llm),
+            AnalystType.FUNDAMENTALS: lambda: create_fundamentals_analyst(self.quick_thinking_llm),
         }
 
         # Create researcher and manager nodes

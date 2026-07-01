@@ -28,6 +28,7 @@ from tradingagents.agents.utils.agent_utils import (
     get_weather,
 )
 from tradingagents.agents.utils.memory import TradingMemoryLog
+from tradingagents.analyst_type import AnalystType
 from tradingagents.dataflows.config import set_config
 from tradingagents.dataflows.utils import safe_ticker_component
 from tradingagents.default_config import DEFAULT_CONFIG
@@ -49,7 +50,12 @@ class TradingAgentsGraph:
 
     def __init__(
         self,
-        selected_analysts=("market", "social", "news", "fundamentals"),
+        selected_analysts=(
+            AnalystType.MARKET,
+            AnalystType.SOCIAL,
+            AnalystType.NEWS,
+            AnalystType.FUNDAMENTALS,
+        ),
         debug=False,
         config: dict[str, Any] = None,
         callbacks: list | None = None,

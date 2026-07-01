@@ -37,6 +37,7 @@ from cli.utils import (
     select_research_depth,
     select_shallow_thinking_agent,
 )
+from tradingagents.analyst_type import AnalystType
 from tradingagents.default_config import DEFAULT_CONFIG
 
 console = Console()
@@ -60,20 +61,20 @@ class MessageBuffer:
 
     # Analyst name mapping
     ANALYST_MAPPING = {
-        "market": "Market Analyst",
-        "social": "Sentiment Analyst",
-        "news": "News Analyst",
-        "fundamentals": "Fundamentals Analyst",
+        AnalystType.MARKET: "Market Analyst",
+        AnalystType.SOCIAL: "Sentiment Analyst",
+        AnalystType.NEWS: "News Analyst",
+        AnalystType.FUNDAMENTALS: "Fundamentals Analyst",
     }
 
     # Report section mapping: section -> (analyst_key for filtering, finalizing_agent)
     # analyst_key: which analyst selection controls this section (None = always included)
     # finalizing_agent: which agent must be "completed" for this report to count as done
     REPORT_SECTIONS = {
-        "market_report": ("market", "Market Analyst"),
-        "sentiment_report": ("social", "Sentiment Analyst"),
-        "news_report": ("news", "News Analyst"),
-        "fundamentals_report": ("fundamentals", "Fundamentals Analyst"),
+        "market_report": (AnalystType.MARKET, "Market Analyst"),
+        "sentiment_report": (AnalystType.SOCIAL, "Sentiment Analyst"),
+        "news_report": (AnalystType.NEWS, "News Analyst"),
+        "fundamentals_report": (AnalystType.FUNDAMENTALS, "Fundamentals Analyst"),
         "investment_plan": (None, "Research Manager"),
         "trader_investment_plan": (None, "Trader"),
         "final_trade_decision": (None, "Portfolio Manager"),
@@ -90,13 +91,13 @@ class MessageBuffer:
         self.selected_analysts = []
         self._processed_message_ids = set()
 
-    def init_for_analysis(self, selected_analysts):
+    def init_for_analysis(self, selected_analysts: list[AnalystType]):
         """Initialize agent status and report sections based on selected analysts.
 
         Args:
-            selected_analysts: List of analyst type strings (e.g., ["market", "news"])
+            selected_analysts: List of AnalystType members (e.g., [AnalystType.MARKET, AnalystType.NEWS])
         """
-        self.selected_analysts = [a.lower() for a in selected_analysts]
+        self.selected_analysts = list(selected_analysts)
 
         # Build agent_status dynamically
         self.agent_status = {}
@@ -788,18 +789,18 @@ def update_research_team_status(status):
 
 
 # Ordered list of analysts for status transitions
-ANALYST_ORDER = ["market", "social", "news", "fundamentals"]
+ANALYST_ORDER = [AnalystType.MARKET, AnalystType.SOCIAL, AnalystType.NEWS, AnalystType.FUNDAMENTALS]
 ANALYST_AGENT_NAMES = {
-    "market": "Market Analyst",
-    "social": "Sentiment Analyst",
-    "news": "News Analyst",
-    "fundamentals": "Fundamentals Analyst",
+    AnalystType.MARKET: "Market Analyst",
+    AnalystType.SOCIAL: "Sentiment Analyst",
+    AnalystType.NEWS: "News Analyst",
+    AnalystType.FUNDAMENTALS: "Fundamentals Analyst",
 }
 ANALYST_REPORT_MAP = {
-    "market": "market_report",
-    "social": "sentiment_report",
-    "news": "news_report",
-    "fundamentals": "fundamentals_report",
+    AnalystType.MARKET: "market_report",
+    AnalystType.SOCIAL: "sentiment_report",
+    AnalystType.NEWS: "news_report",
+    AnalystType.FUNDAMENTALS: "fundamentals_report",
 }
 
 
@@ -978,7 +979,7 @@ def run_analysis(checkpoint: bool | None = None):
     stats_handler = StatsCallbackHandler()
 
     # Keep only the analysts that were selected by the user, in the order defined by ANALYST_ORDER
-    selected_set = {analyst.value for analyst in selections["analysts"]}
+    selected_set = set(selections["analysts"])
     selected_analyst_keys = [a for a in ANALYST_ORDER if a in selected_set]
 
     analyst_execution_plan = build_analyst_execution_plan(selected_analyst_keys)
