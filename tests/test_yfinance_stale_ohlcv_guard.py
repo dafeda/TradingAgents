@@ -5,16 +5,13 @@ The guard raises NoMarketDataError with a stale-specific detail, so the router's
 existing try-next-vendor + single-sentinel handling applies and the sentinel
 surfaces the reason.
 """
-import copy
 import unittest
 from unittest import mock
 
 import pandas as pd
 import pytest
 
-import tradingagents.dataflows.config as config_module
 import tradingagents.dataflows.y_finance as y_finance
-import tradingagents.default_config as default_config
 from tradingagents.dataflows import interface
 from tradingagents.dataflows.config import set_config
 from tradingagents.dataflows.stockstats_utils import _assert_ohlcv_not_stale
@@ -83,12 +80,6 @@ class StaleGuardPropagationTests(unittest.TestCase):
 
 @pytest.mark.unit
 class StaleGuardRoutingTests(unittest.TestCase):
-    def setUp(self):
-        config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
-    def tearDown(self):
-        config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
     def test_router_sentinel_surfaces_stale_reason(self):
         set_config({"data_vendors": {"core_stock_apis": "yfinance"}})
 

@@ -1,12 +1,9 @@
 """ENTSOG pipeline-flow vendor: aggregation, Norway/LNG tagging, routing."""
-import copy
 import unittest
 from unittest import mock
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
-import tradingagents.default_config as default_config
 from tradingagents.dataflows import entsog, interface
 
 _FLOWS = {
@@ -40,9 +37,6 @@ class EntsogTests(unittest.TestCase):
 
 @pytest.mark.unit
 class EntsogRoutingTests(unittest.TestCase):
-    def setUp(self): config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-    def tearDown(self): config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
     def test_routes_to_entsog(self):
         self.assertEqual(interface.get_category_for_method("get_pipeline_flows"), "pipeline_flows")
         with mock.patch.dict(interface.VENDOR_METHODS,

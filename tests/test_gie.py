@@ -3,14 +3,11 @@ missing-value handling, lookahead-safe windowing, and router integration.
 
 All API access is mocked, so these run without a network connection or a key.
 """
-import copy
 import unittest
 from unittest import mock
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
-import tradingagents.default_config as default_config
 from tradingagents.dataflows import gie, interface
 from tradingagents.dataflows.config import set_config
 
@@ -100,12 +97,6 @@ class GieFormattingTests(unittest.TestCase):
 
 @pytest.mark.unit
 class GieRoutingTests(unittest.TestCase):
-    def setUp(self):
-        config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
-    def tearDown(self):
-        config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
     def test_storage_category_routes_to_gie(self):
         self.assertEqual(
             interface.get_category_for_method("get_gas_storage"), "gas_storage"

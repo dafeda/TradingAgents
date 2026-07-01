@@ -4,14 +4,11 @@ integration.
 
 All API access is mocked, so these run without a network connection or a key.
 """
-import copy
 import unittest
 from unittest import mock
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
-import tradingagents.default_config as default_config
 from tradingagents.dataflows import eia, interface
 from tradingagents.dataflows.config import set_config
 
@@ -110,12 +107,6 @@ class EiaFormattingTests(unittest.TestCase):
 
 @pytest.mark.unit
 class EiaRoutingTests(unittest.TestCase):
-    def setUp(self):
-        config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
-    def tearDown(self):
-        config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
     def test_storage_category_routes_to_eia(self):
         self.assertEqual(
             interface.get_category_for_method("get_us_gas_storage"), "us_gas_storage"

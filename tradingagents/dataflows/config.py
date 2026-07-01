@@ -35,3 +35,13 @@ def get_config() -> dict:
     if _config is None:
         initialize_config()
     return deepcopy(_config)
+
+
+def reset_config():
+    """Hard-reset config to DEFAULT_CONFIG.
+
+    Unlike ``set_config``, which merges, this replaces the global outright so
+    keys absent from the default (e.g. leaked by a prior test) are cleared.
+    """
+    global _config
+    _config = deepcopy(default_config.DEFAULT_CONFIG)

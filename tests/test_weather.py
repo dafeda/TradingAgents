@@ -1,12 +1,9 @@
 """Weather degree-days vendor: HDD/CDD math, realised/forecast split, routing."""
-import copy
 import unittest
 from unittest import mock
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
-import tradingagents.default_config as default_config
 from tradingagents.dataflows import interface, weather
 
 _DAILY = {
@@ -54,9 +51,6 @@ class WeatherTests(unittest.TestCase):
 
 @pytest.mark.unit
 class WeatherRoutingTests(unittest.TestCase):
-    def setUp(self): config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-    def tearDown(self): config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
     def test_routes_to_open_meteo(self):
         self.assertEqual(interface.get_category_for_method("get_weather"), "weather_data")
         with mock.patch.dict(interface.VENDOR_METHODS,

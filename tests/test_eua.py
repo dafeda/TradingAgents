@@ -1,12 +1,9 @@
 """EUA carbon vendor: proxy fallback, prefix label, routing."""
-import copy
 import unittest
 from unittest import mock
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
-import tradingagents.default_config as default_config
 from tradingagents.dataflows import eua, interface
 from tradingagents.dataflows.errors import NoMarketDataError
 
@@ -38,9 +35,6 @@ class EuaTests(unittest.TestCase):
 
 @pytest.mark.unit
 class EuaRoutingTests(unittest.TestCase):
-    def setUp(self): config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-    def tearDown(self): config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
     def test_routes_to_yfinance(self):
         self.assertEqual(interface.get_category_for_method("get_carbon_price"), "carbon_data")
         with mock.patch.dict(interface.VENDOR_METHODS,

@@ -5,32 +5,22 @@ The router only advances to the next vendor on an exception, so an empty RSS
 result MUST raise NoMarketDataError (not return a sentinel string) for
 "rss_feeds,yfinance" to reach Yahoo. These tests pin that contract.
 """
-import copy
 from datetime import datetime, timedelta
 
 import pytest
 
-import tradingagents.dataflows.config as config_module
 import tradingagents.default_config as default_config
 from tradingagents.dataflows import interface, rss_news
 from tradingagents.dataflows.config import set_config
 from tradingagents.dataflows.errors import NoMarketDataError
 
 
-def _reset_config():
-    # Hard reset (matches test_vendor_routing): set_config merges, so replace the
-    # global outright to avoid keys leaking across tests.
-    config_module._config = copy.deepcopy(default_config.DEFAULT_CONFIG)
-
-
 @pytest.fixture(autouse=True)
 def _config():
-    _reset_config()
     # One feed configured by default so the "no feeds" guard passes; _fetch_feed
     # is monkeypatched per test, so the URL is never actually hit.
     set_config({"rss_news_feeds": [{"name": "Feed A", "url": "http://a/feed"}]})
     yield
-    _reset_config()
 
 
 def _entry(title, dt=None, link="", summary="body"):
