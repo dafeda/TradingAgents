@@ -2,10 +2,12 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from time import monotonic
 
+from tradingagents.analyst_type import AnalystType
+
 
 @dataclass(frozen=True)
 class AnalystNodeSpec:
-    key: str
+    key: AnalystType
     agent_node: str
     clear_node: str
     tool_node: str
@@ -17,33 +19,33 @@ class AnalystExecutionPlan:
     specs: list[AnalystNodeSpec]
 
 
-ANALYST_NODE_SPECS: dict[str, AnalystNodeSpec] = {
-    "market": AnalystNodeSpec(
-        key="market",
+ANALYST_NODE_SPECS: dict[AnalystType, AnalystNodeSpec] = {
+    AnalystType.MARKET: AnalystNodeSpec(
+        key=AnalystType.MARKET,
         agent_node="Market Analyst",
         clear_node="Msg Clear Market",
         tool_node="tools_market",
         report_key="market_report",
     ),
-    "social": AnalystNodeSpec(
+    AnalystType.SOCIAL: AnalystNodeSpec(
         # Wire key stays "social" for saved-config back-compat; the
         # user-facing label is "Sentiment Analyst" (it reads energy-news
         # positioning for gas, not retail social media).
-        key="social",
+        key=AnalystType.SOCIAL,
         agent_node="Sentiment Analyst",
         clear_node="Msg Clear Sentiment",
         tool_node="tools_social",
         report_key="sentiment_report",
     ),
-    "news": AnalystNodeSpec(
-        key="news",
+    AnalystType.NEWS: AnalystNodeSpec(
+        key=AnalystType.NEWS,
         agent_node="News Analyst",
         clear_node="Msg Clear News",
         tool_node="tools_news",
         report_key="news_report",
     ),
-    "fundamentals": AnalystNodeSpec(
-        key="fundamentals",
+    AnalystType.FUNDAMENTALS: AnalystNodeSpec(
+        key=AnalystType.FUNDAMENTALS,
         agent_node="Fundamentals Analyst",
         clear_node="Msg Clear Fundamentals",
         tool_node="tools_fundamentals",
@@ -53,7 +55,7 @@ ANALYST_NODE_SPECS: dict[str, AnalystNodeSpec] = {
 
 
 def build_analyst_execution_plan(
-    selected_analysts: Iterable[str],
+    selected_analysts: Iterable[AnalystType],
 ) -> AnalystExecutionPlan:
     specs: list[AnalystNodeSpec] = []
     for analyst_key in selected_analysts:
@@ -75,15 +77,15 @@ def get_initial_analyst_node(plan: AnalystExecutionPlan) -> str:
 class AnalystWallTimeTracker:
     def __init__(self, plan: AnalystExecutionPlan):
         self.plan = plan
-        self._started_at: dict[str, float] = {}
-        self._wall_times: dict[str, float] = {}
+        self._started_at: dict[AnalystType, float] = {}
+        self._wall_times: dict[AnalystType, float] = {}
 
-    def mark_started(self, analyst_key: str, started_at: float | None = None) -> None:
+    def mark_started(self, analyst_key: AnalystType, started_at: float | None = None) -> None:
         self._started_at.setdefault(analyst_key, monotonic() if started_at is None else started_at)
 
     def mark_completed(
         self,
-        analyst_key: str,
+        analyst_key: AnalystType,
         completed_at: float | None = None,
     ) -> None:
         if analyst_key in self._wall_times:
@@ -94,7 +96,7 @@ class AnalystWallTimeTracker:
         finished_at = monotonic() if completed_at is None else completed_at
         self._wall_times[analyst_key] = max(0.0, finished_at - started_at)
 
-    def get_wall_times(self) -> dict[str, float]:
+    def get_wall_times(self) -> dict[AnalystType, float]:
         return dict(self._wall_times)
 
     def format_summary(self) -> str:
