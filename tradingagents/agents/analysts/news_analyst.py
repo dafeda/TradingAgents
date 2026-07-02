@@ -23,10 +23,7 @@ def create_news_analyst(llm):
             get_prediction_markets,
         ]
 
-        try:
-            gas_note = get_profile(ticker).news_note
-        except KeyError:
-            gas_note = ""
+        gas_note = get_profile(ticker).news_note
         system_message = (
             "You are a news researcher tasked with analyzing recent news and trends over the past week. Please write a comprehensive report of the current state of the world that is relevant for trading and macroeconomics. Use the available tools: get_news(query, start_date, end_date) for asset-specific or targeted news searches, get_global_news(curr_date, look_back_days, limit) for broader macroeconomic news, get_macro_indicators(indicator, curr_date, look_back_days) to ground macro commentary in actual data from FRED (e.g. 'ecb_rate', 'eurusd', 'eu_inflation', 'fed_funds_rate', '10y_treasury', 'dollar_index'), and get_prediction_markets(topic, limit) for live market-implied probabilities of forward-looking events (e.g. 'EU gas price cap', 'Russia pipeline sanctions', 'cold winter Europe', 'recession 2026'). Provide specific, actionable insights with supporting evidence to help traders make informed decisions."
             + gas_note

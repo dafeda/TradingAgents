@@ -101,15 +101,9 @@ def _build_gas_message(*, ticker: str, start_date: str, end_date: str, news_bloc
     and comes from the profile; the news block and output-fields section are
     constant across instruments.
     """
-    try:
-        framing = get_profile(ticker).sentiment_framing.format(
-            ticker=ticker, start_date=start_date, end_date=end_date
-        )
-    except KeyError:
-        framing = (
-            f"Produce a sentiment report for {ticker} covering {start_date} to "
-            f"{end_date}. Read positioning from the energy news flow below."
-        )
+    framing = get_profile(ticker).sentiment_framing.format(
+        ticker=ticker, start_date=start_date, end_date=end_date
+    )
     return f"""{framing}
 
 ### Energy news — past 7 days

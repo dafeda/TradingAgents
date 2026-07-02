@@ -18,19 +18,10 @@ def create_bull_researcher(llm):
         instrument_context = get_instrument_context_from_state(state)
         ticker = state["ticker_of_interest"]
 
-        try:
-            framing = get_profile(ticker).researcher_framing_bull
-        except KeyError:
-            framing = (
-                "You are a Bull Analyst advocating for a long position. Build a "
-                "strong, evidence-based case emphasizing growth, structural "
-                "support, and positive market indicators."
-            )
+        framing = get_profile(ticker).researcher_framing_bull
 
-        # Only surface the fundamentals report when it has content; for
-        # instruments without a fundamentals analyst (e.g. Henry Hub in this
-        # phase) the field is empty and the line is omitted rather than shown
-        # as a dangling empty label.
+        # Only surface the fundamentals report when it has content; omit the
+        # line rather than showing a dangling empty label.
         fundamentals_line = (
             f"Gas supply/demand report: {fundamentals_report}"
             if fundamentals_report.strip()

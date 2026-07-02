@@ -18,19 +18,10 @@ def create_bear_researcher(llm):
         instrument_context = get_instrument_context_from_state(state)
         ticker = state["ticker_of_interest"]
 
-        try:
-            framing = get_profile(ticker).researcher_framing_bear
-        except KeyError:
-            framing = (
-                "You are a Bear Analyst making the case against a long position. "
-                "Present a well-reasoned argument emphasizing risks, challenges, "
-                "and negative indicators."
-            )
+        framing = get_profile(ticker).researcher_framing_bear
 
-        # Only surface the fundamentals report when it has content; for
-        # instruments without a fundamentals analyst (e.g. Henry Hub in this
-        # phase) the field is empty and the line is omitted rather than shown
-        # as a dangling empty label.
+        # Only surface the fundamentals report when it has content; omit the
+        # line rather than showing a dangling empty label.
         fundamentals_line = (
             f"Gas supply/demand report: {fundamentals_report}"
             if fundamentals_report.strip()

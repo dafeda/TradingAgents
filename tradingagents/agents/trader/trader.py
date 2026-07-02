@@ -24,10 +24,7 @@ def create_trader(llm):
         ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
         investment_plan = state["investment_plan"]
-        try:
-            inputs_desc = get_profile(ticker).trader_inputs_desc
-        except KeyError:
-            inputs_desc = "the analysts' reports and energy positioning"
+        inputs_desc = get_profile(ticker).trader_inputs_desc
 
         messages = [
             {

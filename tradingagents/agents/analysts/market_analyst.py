@@ -22,10 +22,7 @@ def create_market_analyst(llm):
             get_verified_market_snapshot,
         ]
 
-        try:
-            gas_note = get_profile(ticker).market_note
-        except KeyError:
-            gas_note = ""
+        gas_note = get_profile(ticker).market_note
 
         system_message = (
             """You are a trading assistant tasked with analyzing financial markets. Your role is to select the **most relevant indicators** for a given market condition or trading strategy from the following list. The goal is to choose up to **8 indicators** that provide complementary insights without redundancy. Categories and each category's indicators are:

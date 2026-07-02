@@ -25,16 +25,9 @@ def create_fundamentals_analyst(llm):
         ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
 
-        try:
-            profile = get_profile(ticker)
-            system_message = profile.fundamentals_note
-            tools = _US_TOOLS if profile.region == "US" else _EU_TOOLS
-        except KeyError:
-            system_message = (
-                "You are a supply/demand analyst. Write a comprehensive fundamentals "
-                "report on the balance and price drivers to inform traders."
-            )
-            tools = _EU_TOOLS
+        profile = get_profile(ticker)
+        system_message = profile.fundamentals_note
+        tools = _US_TOOLS if profile.region == "US" else _EU_TOOLS
 
         prompt = ChatPromptTemplate.from_messages(
             [
