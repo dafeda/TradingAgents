@@ -13,7 +13,7 @@ def create_market_analyst(llm):
 
     def market_analyst_node(state):
         current_date = state["trade_date"]
-        ticker = state["company_of_interest"]
+        ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
 
         tools = [

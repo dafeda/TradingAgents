@@ -16,7 +16,7 @@ def create_bull_researcher(llm):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
         instrument_context = get_instrument_context_from_state(state)
-        ticker = state["company_of_interest"]
+        ticker = state["ticker_of_interest"]
 
         try:
             framing = get_profile(ticker).researcher_framing_bull

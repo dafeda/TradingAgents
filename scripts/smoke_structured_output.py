@@ -55,7 +55,7 @@ upside. Injection-season seasonality and curve roll argue for fading rallies.
 
 def _make_rm_state():
     return {
-        "company_of_interest": "TTF=F",
+        "ticker_of_interest": "TTF=F",
         "investment_debate_state": {
             "history": DEBATE_HISTORY,
             "bull_history": "Bull Analyst: storage below the seasonal norm, cold-spell demand...",
@@ -69,14 +69,14 @@ def _make_rm_state():
 
 def _make_trader_state(investment_plan: str):
     return {
-        "company_of_interest": "TTF=F",
+        "ticker_of_interest": "TTF=F",
         "investment_plan": investment_plan,
     }
 
 
 def _make_pm_state(investment_plan: str, trader_plan: str):
     return {
-        "company_of_interest": "TTF=F",
+        "ticker_of_interest": "TTF=F",
         "past_context": "",
         "risk_debate_state": {
             "history": "Aggressive: lean in. Conservative: trim. Neutral: balanced sizing.",

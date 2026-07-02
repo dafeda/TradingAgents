@@ -30,7 +30,7 @@ class _PromptLLM:
 
 
 def _state():
-    return {"trade_date": "2026-06-27", "company_of_interest": "TTF=F", "messages": []}
+    return {"trade_date": "2026-06-27", "ticker_of_interest": "TTF=F", "messages": []}
 
 
 class FundamentalsToolsTests(unittest.TestCase):
@@ -46,7 +46,7 @@ class FundamentalsToolsTests(unittest.TestCase):
         # NG=F (Henry Hub) is US-region — the analyst must bind the US tool set
         # (EIA storage + CONUS weather), NOT the EU tools.
         llm = _CapturingLLM()
-        create_fundamentals_analyst(llm)({**_state(), "company_of_interest": "NG=F"})
+        create_fundamentals_analyst(llm)({**_state(), "ticker_of_interest": "NG=F"})
         self.assertEqual(
             set(llm.bound),
             {"get_us_gas_storage", "get_us_weather"},
@@ -65,9 +65,9 @@ class MarketGasNoteTests(unittest.TestCase):
 
 
 class ResearcherRiskFramingTests(unittest.TestCase):
-    def _debate_state(self, company_of_interest="TTF=F", fundamentals_report="f"):
+    def _debate_state(self, ticker_of_interest="TTF=F", fundamentals_report="f"):
         return {
-            "trade_date": "2026-06-27", "company_of_interest": company_of_interest,
+            "trade_date": "2026-06-27", "ticker_of_interest": ticker_of_interest,
             "market_report": "m", "sentiment_report": "s", "news_report": "n",
             "fundamentals_report": fundamentals_report,
             "investment_debate_state": {"history": "", "bull_history": "", "bear_history": "",
@@ -88,7 +88,7 @@ class ResearcherRiskFramingTests(unittest.TestCase):
     def test_bull_uses_henry_hub_framing(self):
         # NG=F bull framing must reference Henry Hub, not TTF, and keep the
         # spread logic correct (wide TTF–HH = bullish for HH via export pull).
-        state = self._debate_state(company_of_interest="NG=F")
+        state = self._debate_state(ticker_of_interest="NG=F")
         llm = _PromptLLM()
         create_bull_researcher(llm)(state)
         self.assertIn("Henry Hub", llm.prompt)
@@ -101,7 +101,7 @@ class ResearcherRiskFramingTests(unittest.TestCase):
         # report is empty and the line must be omitted, not shown as a dangling
         # empty label.
         state = self._debate_state(
-            company_of_interest="NG=F", fundamentals_report=""
+            ticker_of_interest="NG=F", fundamentals_report=""
         )
         llm = _PromptLLM()
         create_bull_researcher(llm)(state)

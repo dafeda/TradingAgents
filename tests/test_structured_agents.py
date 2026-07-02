@@ -129,7 +129,7 @@ class TestRenderResearchPlan:
 
 def _make_trader_state():
     return {
-        "company_of_interest": "TTF=F",
+        "ticker_of_interest": "TTF=F",
         "investment_plan": "**Recommendation**: Buy\n**Rationale**: ...\n**Strategic Actions**: ...",
     }
 
@@ -220,7 +220,7 @@ class TestTraderAgent:
 
 def _make_rm_state():
     return {
-        "company_of_interest": "TTF=F",
+        "ticker_of_interest": "TTF=F",
         "investment_debate_state": {
             "history": "Bull and bear arguments here.",
             "bull_history": "Bull says...",
@@ -340,7 +340,7 @@ class TestRenderSentimentReport:
 
 def _make_sentiment_state():
     return {
-        "company_of_interest": "TTF=F",
+        "ticker_of_interest": "TTF=F",
         "trade_date": "2026-01-15",
         "messages": [],
     }

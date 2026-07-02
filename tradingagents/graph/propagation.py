@@ -17,7 +17,7 @@ class Propagator:
 
     def create_initial_state(
         self,
-        company_name: str,
+        ticker: str,
         trade_date: str,
         past_context: str = "",
         instrument_context: str = "",
@@ -31,8 +31,8 @@ class Propagator:
         ``get_instrument_context_from_state``.
         """
         return {
-            "messages": [("human", company_name)],
-            "company_of_interest": company_name,
+            "messages": [("human", ticker)],
+            "ticker_of_interest": ticker,
             "instrument_context": instrument_context,
             "trade_date": str(trade_date),
             "past_context": past_context,

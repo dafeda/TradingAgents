@@ -77,7 +77,7 @@ def get_instrument_context_from_state(state: Mapping[str, Any]) -> str:
 
     Prefers the context computed once at run start and stored on the state
     (see ``TradingAgentsGraph._run_graph``). Falls back to building it from
-    ``company_of_interest`` via ``build_instrument_context`` — which, like
+    ``ticker_of_interest`` via ``build_instrument_context`` — which, like
     the run-start path, is pure-data (no network lookup) — when the state
     was constructed without it (bare programmatic states, tests). The
     fallback raises ``KeyError`` for tickers without a profile (e.g.
@@ -87,7 +87,7 @@ def get_instrument_context_from_state(state: Mapping[str, Any]) -> str:
     context = state.get("instrument_context")
     if isinstance(context, str) and context.strip():
         return context
-    return build_instrument_context(str(state["company_of_interest"]))
+    return build_instrument_context(str(state["ticker_of_interest"]))
 
 
 def create_msg_delete():

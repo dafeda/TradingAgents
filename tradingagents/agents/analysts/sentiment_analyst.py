@@ -43,7 +43,7 @@ def create_sentiment_analyst(llm):
     structured_llm = bind_structured(llm, SentimentReport, "Sentiment Analyst")
 
     def sentiment_analyst_node(state):
-        ticker = state["company_of_interest"]
+        ticker = state["ticker_of_interest"]
         end_date = state["trade_date"]
         start_date = _seven_days_back(end_date)
         instrument_context = get_instrument_context_from_state(state)

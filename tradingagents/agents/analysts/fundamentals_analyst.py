@@ -22,7 +22,7 @@ _US_TOOLS = [get_us_gas_storage, get_us_weather]
 def create_fundamentals_analyst(llm):
     def fundamentals_analyst_node(state):
         current_date = state["trade_date"]
-        ticker = state["company_of_interest"]
+        ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
 
         try:

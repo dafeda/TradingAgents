@@ -45,7 +45,7 @@ class RiskDebateState(TypedDict):
 
 
 class AgentState(MessagesState):
-    company_of_interest: Annotated[str, "Gas contract we are interested in trading (TTF=F or NG=F)"]
+    ticker_of_interest: Annotated[str, "Gas contract we are interested in trading (TTF=F or NG=F)"]
     instrument_context: Annotated[str, "Deterministic ticker identity resolved at run start"]
     trade_date: Annotated[str, "What date we are trading at"]
 

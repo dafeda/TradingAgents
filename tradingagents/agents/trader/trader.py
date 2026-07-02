@@ -21,11 +21,11 @@ def create_trader(llm):
     structured_llm = bind_structured(llm, TraderProposal, "Trader")
 
     def trader_node(state, name):
-        company_name = state["company_of_interest"]
+        ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)
         investment_plan = state["investment_plan"]
         try:
-            inputs_desc = get_profile(company_name).trader_inputs_desc
+            inputs_desc = get_profile(ticker).trader_inputs_desc
         except KeyError:
             inputs_desc = "the analysts' reports and energy positioning"
 
@@ -42,7 +42,7 @@ def create_trader(llm):
                 "role": "user",
                 "content": (
                     f"Based on a comprehensive analysis by a team of analysts, here is an investment "
-                    f"plan tailored for {company_name}. {instrument_context} This plan incorporates "
+                    f"plan tailored for {ticker}. {instrument_context} This plan incorporates "
                     f"insights from {inputs_desc}. Use this plan as a foundation for evaluating your next "
                     f"trading decision.\n\nProposed Investment Plan: {investment_plan}\n\n"
                     f"Leverage these insights to make an informed and strategic decision."

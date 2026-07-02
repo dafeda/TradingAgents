@@ -45,7 +45,7 @@ class BuildInstrumentContextTests(unittest.TestCase):
 @pytest.mark.unit
 class GetInstrumentContextFromStateTests(unittest.TestCase):
     def test_prefers_precomputed_context(self):
-        state = {"company_of_interest": "TOTDY", "instrument_context": "PRECOMPUTED"}
+        state = {"ticker_of_interest": "TOTDY", "instrument_context": "PRECOMPUTED"}
         self.assertEqual(get_instrument_context_from_state(state), "PRECOMPUTED")
 
     def test_fallback_returns_ticker_only_context(self):
@@ -53,7 +53,7 @@ class GetInstrumentContextFromStateTests(unittest.TestCase):
         # build_instrument_context is pure string formatting (agent_utils no
         # longer imports yfinance), so this path is network-free by construction.
         context = get_instrument_context_from_state(
-            {"company_of_interest": "TTF=F"}
+            {"ticker_of_interest": "TTF=F"}
         )
         self.assertIn("TTF=F", context)
         self.assertIn("futures suffix", context)
@@ -75,7 +75,7 @@ class ContextAnchoredPlaceholderTests(unittest.TestCase):
 
     def test_placeholder_is_not_bare_continue(self):
         result = self._run(
-            {"company_of_interest": "TTF=F", "trade_date": "2026-05-28"}
+            {"ticker_of_interest": "TTF=F", "trade_date": "2026-05-28"}
         )
         placeholder = result["messages"][-1]
         self.assertIsInstance(placeholder, HumanMessage)
@@ -84,7 +84,7 @@ class ContextAnchoredPlaceholderTests(unittest.TestCase):
     def test_placeholder_carries_resolved_identity(self):
         result = self._run(
             {
-                "company_of_interest": "EC",
+                "ticker_of_interest": "EC",
                 "instrument_context": "The instrument to analyze is `EC`. Resolved identity: Company: Ecopetrol.",
                 "trade_date": "2026-05-28",
             }
@@ -94,14 +94,14 @@ class ContextAnchoredPlaceholderTests(unittest.TestCase):
         self.assertIn("2026-05-28", content)
 
     def test_old_messages_are_removed(self):
-        result = self._run({"company_of_interest": "TTF=F", "trade_date": "2026-05-28"})
+        result = self._run({"ticker_of_interest": "TTF=F", "trade_date": "2026-05-28"})
         removals = [m for m in result["messages"] if isinstance(m, RemoveMessage)]
         humans = [m for m in result["messages"] if isinstance(m, HumanMessage)]
         self.assertEqual(len(removals), 2)
         self.assertEqual(len(humans), 1)
 
     def test_safe_defaults_when_state_minimal(self):
-        result = create_msg_delete()({"messages": [], "company_of_interest": "TTF=F"})
+        result = create_msg_delete()({"messages": [], "ticker_of_interest": "TTF=F"})
         placeholder = result["messages"][-1]
         self.assertNotEqual(placeholder.content.strip(), "Continue")
         self.assertIn("TTF=F", placeholder.content)
