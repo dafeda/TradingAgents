@@ -1,5 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_global_news,
     get_instrument_context_from_state,
@@ -11,7 +12,7 @@ from tradingagents.instrument_profiles import get_profile
 
 
 def create_news_analyst(llm):
-    def news_analyst_node(state):
+    def news_analyst_node(state: AgentState):
         current_date = state["trade_date"]
         ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)

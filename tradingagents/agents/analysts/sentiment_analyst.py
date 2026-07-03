@@ -18,6 +18,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 from tradingagents.agents.schemas import SentimentReport, render_sentiment_report
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_instrument_context_from_state,
     get_news,
@@ -42,7 +43,7 @@ def create_sentiment_analyst(llm):
     """
     structured_llm = bind_structured(llm, SentimentReport, "Sentiment Analyst")
 
-    def sentiment_analyst_node(state):
+    def sentiment_analyst_node(state: AgentState):
         ticker = state["ticker_of_interest"]
         end_date = state["trade_date"]
         start_date = _seven_days_back(end_date)

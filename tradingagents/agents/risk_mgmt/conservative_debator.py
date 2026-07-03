@@ -1,10 +1,11 @@
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_instrument_context_from_state,
 )
 
 
 def create_conservative_debator(llm):
-    def conservative_node(state) -> dict:
+    def conservative_node(state: AgentState) -> dict:
         risk_debate_state = state["risk_debate_state"]
         history = risk_debate_state.get("history", "")
         conservative_history = risk_debate_state.get("conservative_history", "")

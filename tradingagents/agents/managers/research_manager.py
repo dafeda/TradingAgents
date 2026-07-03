@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from tradingagents.agents.schemas import ResearchPlan, render_research_plan
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_instrument_context_from_state,
 )
@@ -15,7 +16,7 @@ from tradingagents.agents.utils.structured import (
 def create_research_manager(llm):
     structured_llm = bind_structured(llm, ResearchPlan, "Research Manager")
 
-    def research_manager_node(state) -> dict:
+    def research_manager_node(state: AgentState) -> dict:
         instrument_context = get_instrument_context_from_state(state)
         history = state["investment_debate_state"].get("history", "")
 

@@ -4,6 +4,8 @@ from typing import Any
 
 from langchain_core.messages import HumanMessage, RemoveMessage
 
+from tradingagents.agents.utils.agent_states import AgentState
+
 # Import tools from separate utility files
 from tradingagents.agents.utils.core_stock_tools import get_stock_data
 from tradingagents.agents.utils.gas_data_tools import (
@@ -91,7 +93,7 @@ def get_instrument_context_from_state(state: Mapping[str, Any]) -> str:
 
 
 def create_msg_delete():
-    def delete_messages(state):
+    def delete_messages(state: AgentState):
         """Clear messages and add a context-anchored placeholder.
 
         The placeholder must not be a bare ``"Continue"``: some
@@ -115,6 +117,5 @@ def create_msg_delete():
         return {"messages": removal_operations + [placeholder]}
 
     return delete_messages
-
 
 

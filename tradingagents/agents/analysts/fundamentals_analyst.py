@@ -1,5 +1,6 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_carbon_price,
     get_gas_storage,
@@ -20,7 +21,7 @@ _US_TOOLS = [get_us_gas_storage, get_us_weather]
 
 
 def create_fundamentals_analyst(llm):
-    def fundamentals_analyst_node(state):
+    def fundamentals_analyst_node(state: AgentState):
         current_date = state["trade_date"]
         ticker = state["ticker_of_interest"]
         instrument_context = get_instrument_context_from_state(state)

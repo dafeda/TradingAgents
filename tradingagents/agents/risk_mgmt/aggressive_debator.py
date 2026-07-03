@@ -1,10 +1,11 @@
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_instrument_context_from_state,
 )
 
 
 def create_aggressive_debator(llm):
-    def aggressive_node(state) -> dict:
+    def aggressive_node(state: AgentState) -> dict:
         risk_debate_state = state["risk_debate_state"]
         history = risk_debate_state.get("history", "")
         aggressive_history = risk_debate_state.get("aggressive_history", "")

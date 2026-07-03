@@ -1,3 +1,4 @@
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_instrument_context_from_state,
 )
@@ -5,7 +6,7 @@ from tradingagents.instrument_profiles import get_profile
 
 
 def create_bull_researcher(llm):
-    def bull_node(state) -> dict:
+    def bull_node(state: AgentState) -> dict:
         investment_debate_state = state["investment_debate_state"]
         history = investment_debate_state.get("history", "")
         bull_history = investment_debate_state.get("bull_history", "")

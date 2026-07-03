@@ -1,10 +1,11 @@
+from tradingagents.agents.utils.agent_states import AgentState
 from tradingagents.agents.utils.agent_utils import (
     get_instrument_context_from_state,
 )
 
 
 def create_neutral_debator(llm):
-    def neutral_node(state) -> dict:
+    def neutral_node(state: AgentState) -> dict:
         risk_debate_state = state["risk_debate_state"]
         history = risk_debate_state.get("history", "")
         neutral_history = risk_debate_state.get("neutral_history", "")
