@@ -199,19 +199,18 @@ class TestCheckpointSignature(unittest.TestCase):
         g = object.__new__(TradingAgentsGraph)
         g.selected_analysts = ("market", "news")
         g.config = {"max_debate_rounds": 1, "max_risk_discuss_rounds": 1}
-        base = g._run_signature("stock")
+        base = g._run_signature()
 
-        self.assertNotEqual(base, g._run_signature("crypto"))     # asset mode
         g.selected_analysts = ("market",)
-        self.assertNotEqual(base, g._run_signature("stock"))      # analyst selection
+        self.assertNotEqual(base, g._run_signature())      # analyst selection
         g.selected_analysts = ("market", "news")
         g.config = {"max_debate_rounds": 3, "max_risk_discuss_rounds": 1}
-        self.assertNotEqual(base, g._run_signature("stock"))      # debate depth
+        self.assertNotEqual(base, g._run_signature())      # debate depth
         g.config = {"max_debate_rounds": 1, "max_risk_discuss_rounds": 5}
-        self.assertNotEqual(base, g._run_signature("stock"))      # risk depth
+        self.assertNotEqual(base, g._run_signature())      # risk depth
         # Stable for identical inputs.
         g.config = {"max_debate_rounds": 1, "max_risk_discuss_rounds": 1}
-        self.assertEqual(base, g._run_signature("stock"))
+        self.assertEqual(base, g._run_signature())
 
 
 if __name__ == "__main__":

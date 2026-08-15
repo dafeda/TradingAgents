@@ -50,7 +50,7 @@ def test_trader_prompt_states_constraint():
     captured = {}
     llm = _capturing_llm(captured, TraderProposal(action=TraderAction.BUY, reasoning="x"))
     create_trader(llm)({
-        "company_of_interest": "NVDA",
+        "ticker_of_interest": "TTF=F",
         "investment_plan": "**Recommendation**: Buy",
     })
     assert NO_EXTERNAL_TOOLS in _prompt_text(captured["prompt"])
@@ -68,7 +68,7 @@ def test_research_manager_prompt_states_constraint():
         ),
     )
     create_research_manager(llm)({
-        "company_of_interest": "NVDA",
+        "ticker_of_interest": "TTF=F",
         "investment_debate_state": {
             "history": "h", "bull_history": "b", "bear_history": "r",
             "current_response": "", "judge_decision": "", "count": 1,
@@ -97,7 +97,7 @@ def test_portfolio_manager_prompt_states_constraint():
         "latest_speaker": "Neutral", "count": 1,
     }
     create_portfolio_manager(llm)({
-        "company_of_interest": "NVDA",
+        "ticker_of_interest": "TTF=F",
         "risk_debate_state": risk,
         "investment_plan": "plan",
         "trader_investment_plan": "trader plan",
@@ -110,8 +110,6 @@ def test_sentiment_prompt_states_constraint(monkeypatch):
     from tradingagents.agents.schemas import SentimentBand, SentimentReport
 
     # Pre-fetched sources are stubbed so the prompt builds without network I/O.
-    monkeypatch.setattr(sentiment, "fetch_stocktwits_messages", lambda *a, **k: "st")
-    monkeypatch.setattr(sentiment, "fetch_reddit_posts", lambda *a, **k: "rd")
     monkeypatch.setattr(sentiment.get_news, "func", lambda *a, **k: "news", raising=False)
 
     captured = {}
@@ -120,8 +118,8 @@ def test_sentiment_prompt_states_constraint(monkeypatch):
         confidence="high", narrative="n",
     ))
     sentiment.create_sentiment_analyst(llm)({
-        "company_of_interest": "NVDA", "trade_date": "2026-01-15",
-        "asset_type": "stock", "messages": [],
+        "ticker_of_interest": "TTF=F", "trade_date": "2026-01-15",
+        "messages": [],
     })
     text = _prompt_text(captured["prompt"])
     assert NO_EXTERNAL_TOOLS in text
