@@ -15,10 +15,17 @@ from tradingagents.agents.risk_mgmt.aggressive_debator import create_aggressive_
 
 class _CapturingLLM:
     """Records tools passed to bind_tools; returns a no-tool-call AIMessage."""
-    def __init__(self): self.bound = []
+    def __init__(self):
+        self.bound = []
+        self.prompt = None
+
     def bind_tools(self, tools):
         self.bound = [t.name for t in tools]
-        return RunnableLambda(lambda _msgs: AIMessage(content="report body"))
+        return RunnableLambda(self._invoke)
+
+    def _invoke(self, prompt):
+        self.prompt = prompt
+        return AIMessage(content="report body")
 
 
 class _PromptLLM:
@@ -62,6 +69,15 @@ class MarketGasNoteTests(unittest.TestCase):
         out = create_market_analyst(llm)(_state())
         self.assertEqual(out["market_report"], "report body")
         self.assertIn("get_stock_data", llm.bound)
+
+    def test_market_prompt_forbids_process_narration(self):
+        llm = _CapturingLLM()
+        create_market_analyst(llm)(_state())
+        prompt = llm.prompt.to_string()
+        self.assertIn("Begin the final report directly with decision-relevant analysis", prompt)
+        self.assertIn("Do not include process narration", prompt)
+        self.assertIn("I now have all the data needed", prompt)
+        self.assertIn("Let me compile", prompt)
 
 
 class ResearcherRiskFramingTests(unittest.TestCase):
