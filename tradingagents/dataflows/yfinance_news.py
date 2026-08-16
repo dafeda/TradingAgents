@@ -127,11 +127,10 @@ def get_news_yfinance(
             if not _in_news_window(data["pub_date"], start_dt, end_dt):
                 continue
 
-            news_str += f"### {data['title']} (source: {data['publisher']})\n"
+            title = f"[{data['title']}]({data['link']})" if data["link"] else data["title"]
+            news_str += f"### {title} (source: {data['publisher']})\n"
             if data["summary"]:
                 news_str += f"{data['summary']}\n"
-            if data["link"]:
-                news_str += f"Link: {data['link']}\n"
             news_str += "\n"
             filtered_count += 1
 
@@ -213,11 +212,10 @@ def get_global_news_yfinance(
             data = _extract_article_data(article)
             if not _in_news_window(data["pub_date"], start_dt, curr_dt):
                 continue
-            news_str += f"### {data['title']} (source: {data['publisher']})\n"
+            title = f"[{data['title']}]({data['link']})" if data["link"] else data["title"]
+            news_str += f"### {title} (source: {data['publisher']})\n"
             if data["summary"]:
                 news_str += f"{data['summary']}\n"
-            if data["link"]:
-                news_str += f"Link: {data['link']}\n"
             news_str += "\n"
             kept += 1
 

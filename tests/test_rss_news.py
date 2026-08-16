@@ -56,7 +56,7 @@ def test_default_news_vendor_is_rss_then_yfinance():
 def test_in_window_article_included(monkeypatch):
     _patch_entries(monkeypatch, [_entry("Storage draw accelerates", datetime(2025, 5, 5), "http://x/1")])
     out = rss_news.get_news_rss_feeds("TTF=F", "2025-05-01", "2025-05-09")
-    assert "Storage draw accelerates" in out
+    assert "[Storage draw accelerates](http://x/1)" in out
     assert "source: Feed A" in out
     assert "## TTF=F News (RSS)" in out
 

@@ -84,7 +84,7 @@ def test_global_news_future_flat_article_excluded(monkeypatch):
 
     monkeypatch.setattr(ynews.yf, "Search", FakeSearch)
     out = ynews.get_global_news_yfinance("2025-05-09", look_back_days=7, limit=10)
-    assert "PAST EVENT" in out
+    assert "[PAST EVENT](l)" in out
     assert "FUTURE EVENT" not in out  # #1007
 
 

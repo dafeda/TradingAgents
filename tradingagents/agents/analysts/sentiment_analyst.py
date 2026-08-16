@@ -117,7 +117,7 @@ def _build_gas_message(*, ticker: str, start_date: str, end_date: str, news_bloc
 {news_block}
 <end_of_news>
 
-How to analyze: weight confirmed events (outages, maintenance, storage figures) over opinion; identify the dominant narrative and any bullish/bearish skew in coverage; flag thin data honestly in `confidence`. Frame conclusions as signal to weigh with fundamentals/technicals, not a price call.
+How to analyze: weight confirmed events (outages, maintenance, storage figures) over opinion; identify the dominant narrative and any bullish/bearish skew in coverage; flag thin data honestly in `confidence`. Frame conclusions as signal to weigh with fundamentals/technicals, not a price call. For every claim based on a news article, add an inline Markdown citation immediately after the claim using the article title and URL from the news block, for example ([Article title](https://example.com/article)). Include these citations in the source-by-source breakdown and summary table cells. Use only source URLs present in the news block; never invent, guess, or alter a URL. If a source has no URL, name the publisher in plain text instead.
 
 ## Output fields
 - **overall_band**: Bullish / Mildly Bullish / Neutral / Mixed / Mildly Bearish / Bearish.

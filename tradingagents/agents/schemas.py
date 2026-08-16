@@ -318,7 +318,11 @@ class SentimentReport(BaseModel):
             "(3) dominant narrative themes; "
             "(4) catalysts and risks surfaced by the data; "
             "(5) a markdown table summarising key sentiment signals, their "
-            "direction, source, and supporting evidence. "
+            "direction, source, and supporting evidence. Add an inline Markdown "
+            "citation immediately after every news-backed claim, including in "
+            "table cells, using only article titles and URLs supplied in the "
+            "prompt; never invent, guess, or alter a URL. If an article has no "
+            "URL, attribute it by publisher name in plain text. "
             "Keep it informative and substantive: develop each section thoroughly "
             "with concrete evidence so every point adds new signal for the trader."
         ),

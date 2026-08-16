@@ -158,11 +158,10 @@ def _format(articles: list) -> str:
     """Render articles in the same markdown layout as the yfinance news vendor."""
     out = ""
     for a in articles:
-        out += f"### {a['title']} (source: {a['publisher']})\n"
+        title = f"[{a['title']}]({a['link']})" if a["link"] else a["title"]
+        out += f"### {title} (source: {a['publisher']})\n"
         if a["summary"]:
             out += f"{a['summary']}\n"
-        if a["link"]:
-            out += f"Link: {a['link']}\n"
         out += "\n"
     return out
 

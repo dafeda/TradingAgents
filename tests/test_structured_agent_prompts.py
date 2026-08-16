@@ -128,6 +128,41 @@ def test_sentiment_prompt_states_constraint(monkeypatch):
 
 
 @pytest.mark.unit
+def test_sentiment_prompt_requires_grounded_inline_citations(monkeypatch):
+    from tradingagents.agents.schemas import SentimentBand, SentimentReport
+
+    source = "[Storage draw accelerates](https://example.com/storage)"
+    monkeypatch.setattr(sentiment.get_news, "func", lambda *a, **k: source, raising=False)
+
+    captured = {}
+    llm = _capturing_llm(captured, SentimentReport(
+        overall_band=SentimentBand.BULLISH, overall_score=7.5,
+        confidence="high", narrative="n",
+    ))
+    sentiment.create_sentiment_analyst(llm)({
+        "ticker_of_interest": "TTF=F", "trade_date": "2026-01-15",
+        "messages": [],
+    })
+    text = _prompt_text(captured["prompt"])
+    assert source in text
+    assert "inline Markdown citation immediately after the claim" in text
+    assert "Include these citations in the source-by-source breakdown and summary table cells" in text
+    assert "Use only source URLs present in the news block" in text
+    assert "never invent, guess, or alter a URL" in text
+
+
+@pytest.mark.unit
+def test_sentiment_schema_requires_grounded_inline_citations():
+    from tradingagents.agents.schemas import SentimentReport
+
+    description = SentimentReport.model_fields["narrative"].description
+    assert "inline Markdown citation immediately after every news-backed claim" in description
+    assert "including in table cells" in description
+    assert "using only article titles and URLs supplied in the prompt" in description
+    assert "never invent, guess, or alter a URL" in description
+
+
+@pytest.mark.unit
 def test_tool_using_analysts_keep_their_date_guidance():
     # The analysts that really do call tools keep the wording that anchors their
     # tool date ranges (#836) — this fix is scoped to no-tool agents.
