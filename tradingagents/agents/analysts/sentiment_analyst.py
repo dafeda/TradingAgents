@@ -4,12 +4,11 @@ There is no retail cashtag feed for gas, so sentiment is read from the energy
 news flow (supply outages, LNG cargoes, storage headlines, weather scares, EUA
 carbon, Norway maintenance, geopolitics) rather than social platforms.
 
-The agent does not use tool-calling; the news data is pre-fetched and injected
-into the prompt from turn 0. Output uses the structured-output pattern
+The agent does not use external tool-calling; the news data is pre-fetched and
+injected into the prompt from turn 0. Output uses the structured-output pattern
 (json_schema for OpenAI/xAI, response_schema for Gemini, tool-use for Anthropic),
-falling back to free-text generation for providers that lack native support, so
-the sentiment header (band + score + confidence) is deterministic across runs
-and providers instead of free-form per-model prose.
+so the sentiment header (band + score + confidence) is deterministic across
+runs and providers instead of free-form per-model prose.
 """
 
 from datetime import datetime, timedelta
@@ -26,7 +25,7 @@ from tradingagents.agents.utils.agent_utils import (
 from tradingagents.agents.utils.structured import (
     NO_EXTERNAL_TOOLS,
     bind_structured,
-    invoke_structured_or_freetext,
+    invoke_structured,
 )
 from tradingagents.instrument_profiles import get_profile
 
@@ -39,8 +38,7 @@ def create_sentiment_analyst(llm):
     """Create a sentiment analyst node for the trading graph.
 
     Pre-fetches energy news, injects it into the prompt, and produces a
-    deterministic sentiment report via structured output (with a free-text
-    fallback for providers that do not support it).
+    deterministic sentiment report via required structured output.
     """
     structured_llm = bind_structured(llm, SentimentReport, "Sentiment Analyst")
 
@@ -80,13 +78,12 @@ def create_sentiment_analyst(llm):
         prompt = prompt.partial(instrument_context=instrument_context)
 
         # Format the template into a concrete message list so the structured
-        # and free-text paths receive the same input. No bind_tools — the
-        # data is already in the prompt.
+        # invocation receives concrete input. No bind_tools: the data is
+        # already in the prompt.
         formatted_messages = prompt.format_messages(messages=state["messages"])
 
-        report_text = invoke_structured_or_freetext(
+        report_text = invoke_structured(
             structured_llm,
-            llm,
             formatted_messages,
             render_sentiment_report,
             "Sentiment Analyst",

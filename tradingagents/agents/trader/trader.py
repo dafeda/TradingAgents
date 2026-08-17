@@ -14,7 +14,7 @@ from tradingagents.agents.utils.agent_utils import (
 from tradingagents.agents.utils.structured import (
     NO_EXTERNAL_TOOLS,
     bind_structured,
-    invoke_structured_or_freetext,
+    invoke_structured,
 )
 from tradingagents.instrument_profiles import get_profile
 
@@ -50,9 +50,8 @@ def create_trader(llm):
             },
         ]
 
-        trader_plan = invoke_structured_or_freetext(
+        trader_plan = invoke_structured(
             structured_llm,
-            llm,
             messages,
             render_trader_proposal,
             "Trader",

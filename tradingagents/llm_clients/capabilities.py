@@ -22,7 +22,7 @@ StructuredMethod = Literal[
     "function_calling",  # uses tools; respects supports_tool_choice
     "json_mode",         # uses response_format={"type":"json_object"}
     "json_schema",       # uses response_format={"type":"json_schema",...}
-    "none",              # no structured output available; caller falls back to free-text
+    "none",              # no structured output available
 ]
 
 

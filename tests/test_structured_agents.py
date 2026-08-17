@@ -1,10 +1,9 @@
 """Tests for structured-output agents (Trader, Research Manager, Sentiment Analyst).
 
 The Portfolio Manager has its own coverage in tests/test_memory_log.py
-(which exercises the full memory-log → PM injection cycle).  This file
-covers the parallel schemas, render functions, and graceful-fallback
-behavior we added for the Trader, Research Manager, and Sentiment Analyst
-so they share the same deterministic output shape.
+(which exercises the full memory-log → PM injection cycle). This file covers
+the parallel schemas, render functions, and required structured-output behavior
+for the Trader, Research Manager, and Sentiment Analyst.
 """
 
 from unittest.mock import MagicMock
@@ -123,7 +122,7 @@ class TestRenderResearchPlan:
 
 
 # ---------------------------------------------------------------------------
-# Trader agent: structured happy path + fallback
+# Trader agent: structured happy path + required output
 # ---------------------------------------------------------------------------
 
 
@@ -153,21 +152,13 @@ def _structured_trader_llm(captured: dict, proposal: TraderProposal | None = Non
 
 
 @pytest.mark.unit
-def test_invoke_structured_falls_back_when_result_is_none():
-    # A thinking model can answer in plain text, leaving the parser with None.
-    # That must fall back to free text, not crash on render(None).
-    from tradingagents.agents.utils.structured import invoke_structured_or_freetext
+def test_invoke_structured_raises_when_result_is_none():
+    from tradingagents.agents.utils.structured import invoke_structured
 
     structured = MagicMock()
     structured.invoke.return_value = None
-    plain = MagicMock()
-    plain.invoke.return_value = MagicMock(content="FREETEXT")
-
-    out = invoke_structured_or_freetext(
-        structured, plain, "prompt", render=lambda r: r.rating, agent_name="t"
-    )
-    assert out == "FREETEXT"
-    plain.invoke.assert_called_once()
+    with pytest.raises(ValueError, match="t: structured output returned no parsed result"):
+        invoke_structured(structured, "prompt", render=lambda r: r.rating, agent_name="t")
 
 
 @pytest.mark.unit
@@ -200,21 +191,16 @@ class TestTraderAgent:
         prompt = captured["prompt"]
         assert any("Proposed Investment Plan" in m["content"] for m in prompt)
 
-    def test_falls_back_to_freetext_when_structured_unavailable(self):
-        plain_response = (
-            "**Action**: Sell\n\nGuidance cut hits margins.\n\n"
-            "FINAL TRANSACTION PROPOSAL: **SELL**"
-        )
+    def test_rejects_provider_when_structured_output_unavailable(self):
         llm = MagicMock()
         llm.with_structured_output.side_effect = NotImplementedError("provider unsupported")
-        llm.invoke.return_value = MagicMock(content=plain_response)
-        trader = create_trader(llm)
-        result = trader(_make_trader_state())
-        assert result["trader_investment_plan"] == plain_response
+        with pytest.raises(RuntimeError, match="Trader requires structured output"):
+            create_trader(llm)
+        llm.invoke.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
-# Research Manager agent: structured happy path + fallback
+# Research Manager agent: structured happy path + required output
 # ---------------------------------------------------------------------------
 
 
@@ -275,18 +261,16 @@ class TestResearchManagerAgent:
         for tier in ("Buy", "Overweight", "Hold", "Underweight", "Sell"):
             assert f"**{tier}**" in prompt, f"missing {tier} in prompt"
 
-    def test_falls_back_to_freetext_when_structured_unavailable(self):
-        plain_response = "**Recommendation**: Sell\n\n**Rationale**: ...\n\n**Strategic Actions**: ..."
+    def test_rejects_provider_when_structured_output_unavailable(self):
         llm = MagicMock()
         llm.with_structured_output.side_effect = NotImplementedError("provider unsupported")
-        llm.invoke.return_value = MagicMock(content=plain_response)
-        rm = create_research_manager(llm)
-        result = rm(_make_rm_state())
-        assert result["investment_plan"] == plain_response
+        with pytest.raises(RuntimeError, match="Research Manager requires structured output"):
+            create_research_manager(llm)
+        llm.invoke.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
-# Sentiment Analyst: schema, render, structured happy path + fallback
+# Sentiment Analyst: schema, render, structured happy path + required output
 # ---------------------------------------------------------------------------
 
 
@@ -390,18 +374,18 @@ class TestSentimentAnalystAgent:
         create_sentiment_analyst(_structured_sentiment_llm(captured))(_make_sentiment_state())
         assert any("TTF=F" in str(m) for m in captured["prompt"])
 
-    def test_falls_back_to_freetext_when_structured_unavailable(self):
-        plain = "**Overall Sentiment:** **Bearish** (Score: 3.0/10)\n**Confidence:** Low\n\nLimited data."
+    def test_rejects_provider_when_structured_output_unavailable(self):
         llm = MagicMock()
         llm.with_structured_output.side_effect = NotImplementedError("provider unsupported")
-        llm.invoke.return_value = MagicMock(content=plain)
-        assert create_sentiment_analyst(llm)(_make_sentiment_state())["sentiment_report"] == plain
+        with pytest.raises(RuntimeError, match="Sentiment Analyst requires structured output"):
+            create_sentiment_analyst(llm)
+        llm.invoke.assert_not_called()
 
-    def test_falls_back_to_freetext_when_structured_call_fails(self):
-        plain = "Fallback free-text sentiment."
+    def test_structured_call_failure_propagates(self):
         structured = MagicMock()
         structured.invoke.side_effect = ValueError("bad JSON from model")
         llm = MagicMock()
         llm.with_structured_output.return_value = structured
-        llm.invoke.return_value = MagicMock(content=plain)
-        assert create_sentiment_analyst(llm)(_make_sentiment_state())["sentiment_report"] == plain
+        with pytest.raises(ValueError, match="bad JSON from model"):
+            create_sentiment_analyst(llm)(_make_sentiment_state())
+        llm.invoke.assert_not_called()
