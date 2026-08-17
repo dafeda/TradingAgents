@@ -1,9 +1,8 @@
 """Agents on the schema-only structured-output path must not invite tool calls (#1130).
 
 `with_structured_output` binds exactly one tool (the schema). A prompt that
-primes tool use makes models emit an unknown `web_search` call, which discards
-the structured attempt and forces a free-text retry — an extra LLM round trip
-and the loss of typed output.
+primes tool use makes models emit an unknown `web_search` call, causing the
+required structured invocation to fail.
 
 These assert the constraint reaches the *rendered* prompt each agent actually
 sends, not merely that the constant is referenced in the module.

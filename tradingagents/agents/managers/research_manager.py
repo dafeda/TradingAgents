@@ -10,7 +10,7 @@ from tradingagents.agents.utils.agent_utils import (
 from tradingagents.agents.utils.structured import (
     NO_EXTERNAL_TOOLS,
     bind_structured,
-    invoke_structured_or_freetext,
+    invoke_structured,
 )
 
 
@@ -45,9 +45,8 @@ Commit to a clear stance whenever the debate's strongest arguments warrant one; 
 
 {NO_EXTERNAL_TOOLS}"""
 
-        investment_plan = invoke_structured_or_freetext(
+        investment_plan = invoke_structured(
             structured_llm,
-            llm,
             prompt,
             render_research_plan,
             "Research Manager",

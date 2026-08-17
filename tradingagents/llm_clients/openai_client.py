@@ -40,7 +40,7 @@ class NormalizedChatOpenAI(ChatOpenAI):
         if caps.preferred_structured_method == "none":
             raise NotImplementedError(
                 f"{self.model_name} has no structured-output method available; "
-                f"agent factories will fall back to free-text generation."
+                "agents that require structured output cannot use this model."
             )
         method = method or caps.preferred_structured_method
         # When the model rejects tool_choice, suppress langchain's hardcoded

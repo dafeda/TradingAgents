@@ -4,8 +4,7 @@ Uses LangChain's ``with_structured_output`` so the LLM produces a typed
 ``PortfolioDecision`` directly, in a single call.  The result is rendered
 back to markdown for storage in ``final_trade_decision`` so memory log,
 CLI display, and saved reports continue to consume the same shape they do
-today.  When a provider does not expose structured output, the agent falls
-back gracefully to free-text generation.
+today. Providers that do not expose structured output are rejected.
 """
 
 from __future__ import annotations
@@ -18,7 +17,7 @@ from tradingagents.agents.utils.agent_utils import (
 from tradingagents.agents.utils.structured import (
     NO_EXTERNAL_TOOLS,
     bind_structured,
-    invoke_structured_or_freetext,
+    invoke_structured,
 )
 
 
@@ -66,9 +65,8 @@ Be decisive and ground every conclusion in specific evidence from the analysts.
 
 {NO_EXTERNAL_TOOLS}"""
 
-        final_trade_decision = invoke_structured_or_freetext(
+        final_trade_decision = invoke_structured(
             structured_llm,
-            llm,
             prompt,
             render_pm_decision,
             "Portfolio Manager",
